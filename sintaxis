@@ -1,0 +1,107 @@
+Programa = (_ DeclaracionDeFuncion _ Programa _)?
+DeclaracionDeFuncion = (FUN _ ID _ Parametros _ Bloque)
+ / (FUN _ ID _ Parametros _ COLON _ Tipo _ Bloque)
+Parametros = LPAREN _ ListaParametros _ RPAREN
+ListaParametros = (ListaParametrosNoVacia)?
+ListaParametrosNoVacia = (Parametro _ COMMA _ ListaParametrosNoVacia) / Parametro
+Parametro = ID _ COLON _ Tipo
+Tipo = INT / BOOL / VEC
+Bloque = LBRACE _ ListaDeInstrucciones _ RBRACE
+ListaDeInstrucciones = (Instruccion _ ListaDeInstrucciones)?
+
+// cambiado el orden de las reglas
+Instruccion = (ID _ ASSIGN _ Expresion)
+ / (ID _ LBRACK _ Expresion _ RBRACK _ ASSIGN _ Expresion)
+ / (IF _ Expresion _ Bloque _ ELSE _ Bloque)
+ / (IF _ Expresion _ Bloque)
+ / (WHILE _ Expresion _ Bloque)
+ / (RETURN _ Expresion)
+ / (ID LPAREN ListaDeExpresiones RPAREN)
+ListaDeExpresiones = (ListaDeExpresionesNoVacia)?
+
+// cambiado el orden de las reglas
+ListaDeExpresionesNoVacia = (Expresion COMMA ListaDeExpresionesNoVacia) / Expresion
+Expresion = ExpresionLogica
+
+// eliminada recursion a izquierda 
+ExpresionLogica =
+  ExpresionLogicaAtomica
+  (
+    (_ AND _ ExpresionLogicaAtomica) /
+    (_ OR _ ExpresionLogicaAtomica)
+  )*
+ 
+ExpresionLogicaAtomica = (NOT _ ExpresionLogicaAtomica) / ExpresionRelacional
+
+ExpresionRelacional = (ExpresionAditiva _ LE _ ExpresionAditiva)
+ / (ExpresionAditiva _ GE _ ExpresionAditiva)
+ / (ExpresionAditiva _ LT _ ExpresionAditiva)
+ / (ExpresionAditiva _ GT _ ExpresionAditiva)
+ / (ExpresionAditiva _ EQ _ ExpresionAditiva)
+ / (ExpresionAditiva _ NE _ ExpresionAditiva)
+ / ExpresionAditiva
+
+// eliminada recursion a izquierda de la gramatica original
+ExpresionAditiva =
+  ExpresionMultiplicativa
+  (
+    (_ PLUS _ ExpresionMultiplicativa) /
+    (_ MINUS _ ExpresionMultiplicativa)
+  )*
+ 
+// eliminada recursion a izquierda de la gramatica original
+ExpresionMultiplicativa = ExpresionAtomica (_ TIMES _ ExpresionAtomica)*
+
+// cambiado el orden de las reglas
+ExpresionAtomica =
+  (LBRACK ListaDeExpresiones RBRACK)
+ / (HASH ID)
+ / (ID LPAREN ListaDeExpresiones RPAREN)
+ / (ID LBRACK Expresion RBRACK)
+ / (LPAREN Expresion RPAREN)
+ / NUM { return { node: "ExprConstNum", value: text() } }
+ / TRUE
+ / FALSE
+ / ID
+
+ID = [a-zA-Z][a-zA-Z0-9]*
+NUM = [0-9]+
+
+LPAREN = "("
+RPAREN = ")"
+COMMA = ","
+LBRACK = "["
+RBRACK = "]"
+LBRACE = "{"
+RBRACE = "}"
+ASSIGN = ":="
+COLON = ":"
+HASH = "#"
+LE = "<="
+GE = ">="
+LT = "<"
+GT = ">"
+EQ = "=="
+NE = "!="
+PLUS = "+"
+MINUS = "-"
+TIMES = "*"
+
+BOOL = "Bool"
+INT = "Int"
+VEC = "Vec"
+TRUE = "True"
+FALSE = "False"
+AND = "and"
+ELSE = "else"
+FUN = "fun"
+IF = "if"
+NOT = "not"
+OR = "or"
+RETURN = "return"
+WHILE = "while"
+
+_ = (Whitespace / Comment)*
+
+Whitespace = [ \t\n\r]
+Comment = "//"[^\n\r]* 
