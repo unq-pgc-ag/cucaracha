@@ -1,36 +1,63 @@
-Programa = (_ DeclaracionDeFuncion _ Programa _)?
-DeclaracionDeFuncion = (FUN _ ID _ Parametros _ Bloque)
- / (FUN _ ID _ Parametros _ COLON _ Tipo _ Bloque)
-Parametros = LPAREN _ ListaParametros _ RPAREN
-ListaParametros = (ListaParametrosNoVacia)?
-ListaParametrosNoVacia = (Parametro _ COMMA _ ListaParametrosNoVacia) / Parametro
-Parametro = ID _ COLON _ Tipo
-Tipo = INT / BOOL / VEC
-Bloque = LBRACE _ ListaDeInstrucciones _ RBRACE
-ListaDeInstrucciones = (Instruccion _ ListaDeInstrucciones)?
+Programa = functions:(_ DeclaracionDeFuncion _)*
+   { return {
+       node: "Program",
+       functions: functions.map(function(f) { return f[1]; })
+     };
+   }
 
-// cambiado el orden de las reglas
-Instruccion = (ID _ ASSIGN _ Expresion)
- / (ID _ LBRACK _ Expresion _ RBRACK _ ASSIGN _ Expresion)
- / (IF _ Expresion _ Bloque _ ELSE _ Bloque)
- / (IF _ Expresion _ Bloque)
- / (WHILE _ Expresion _ Bloque)
- / (RETURN _ Expresion)
- / (ID LPAREN ListaDeExpresiones RPAREN)
-ListaDeExpresiones = (ListaDeExpresionesNoVacia)?
+DeclaracionDeFuncion = DeclaracionDeFuncionConTipos / DeclaracionDeFuncionSinTipos
+DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ type:Tipo _ block:Bloque
+   { return { node: "Function", id: id, params: params, type: type, block: block }; }
+DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
+   { return { node: "Function", id: id, params: params, type: "Unit", block: block }; }
 
-// cambiado el orden de las reglas
-ListaDeExpresionesNoVacia = (Expresion COMMA ListaDeExpresionesNoVacia) / Expresion
+Parametros = LPAREN _ list:ListaParametros _ RPAREN
+   { return list; }
+ListaParametros = first:Parametro? rest:(_ COMMA _ Parametro)*
+   { if(first) { return [first].concat(rest); } else { return []; } }
+
+Parametro = id:ID _ COLON _ type:Tipo
+   { return { node: "Parameter", id: id, type: type }; }
+
+Tipo =
+   INT  { return "Int"; }
+ / BOOL { return "Bool"; }
+ / VEC  { return "Vec"; }
+
+Bloque = LBRACE _ instructions:ListaDeInstrucciones _ RBRACE
+   { return { node: "Block", instructions: instructions }; }
+
+ListaDeInstrucciones = instrs:(_ Instruccion _)*
+   { return instrs.map(function(i){ return i[1]; } ); }
+
+Instruccion =
+   id:ID _ ASSIGN _ expr:Expresion
+   { return { node: "StmtAssign", id: id, expr: expr }; }
+ / id:ID _ LBRACK _ expr1:Expresion _ RBRACK _ ASSIGN _ expr2:Expresion
+   { return { node: "StmtVecAssign", id: id, expr1: expr1, expr2: expr2 }; }
+ / IF _ expr:Expresion _ block1:Bloque _ ELSE _ block2:Bloque
+   { return { node: "StmtIfElse", expr: expr, block1: block1, block2: block2 }; }
+ / IF _ expr:Expresion _ block:Bloque
+   { return { node: "StmtIf", expr: expr, block: block }; }
+ / WHILE _ expr:Expresion _ block:Bloque
+   { return { node: "StmtWhile", expr: expr, block: block }; }
+ / RETURN _ expr:Expresion
+   { return { node: "StmtReturn", expr: expr }; }
+ / id:ID LPAREN expressions:ListaDeExpresiones RPAREN
+   { return { node: "StmtCall", expressions: expressions }; }
+
+ListaDeExpresiones = first:Expresion? rest:(_ COMMA _ Expresion)*
+   { if(first) { return [first].concat(rest); } else { return []; } }
+
 Expresion = ExpresionLogica
 
-// eliminada recursion a izquierda 
 ExpresionLogica =
   ExpresionLogicaAtomica
   (
     (_ AND _ ExpresionLogicaAtomica) /
     (_ OR _ ExpresionLogicaAtomica)
   )*
- 
+
 ExpresionLogicaAtomica = (NOT _ ExpresionLogicaAtomica) / ExpresionRelacional
 
 ExpresionRelacional = (ExpresionAditiva _ LE _ ExpresionAditiva)
@@ -41,30 +68,34 @@ ExpresionRelacional = (ExpresionAditiva _ LE _ ExpresionAditiva)
  / (ExpresionAditiva _ NE _ ExpresionAditiva)
  / ExpresionAditiva
 
-// eliminada recursion a izquierda de la gramatica original
 ExpresionAditiva =
   ExpresionMultiplicativa
   (
     (_ PLUS _ ExpresionMultiplicativa) /
     (_ MINUS _ ExpresionMultiplicativa)
   )*
- 
-// eliminada recursion a izquierda de la gramatica original
+
 ExpresionMultiplicativa = ExpresionAtomica (_ TIMES _ ExpresionAtomica)*
 
-// cambiado el orden de las reglas
 ExpresionAtomica =
-  (LBRACK ListaDeExpresiones RBRACK)
- / (HASH ID)
- / (ID LPAREN ListaDeExpresiones RPAREN)
- / (ID LBRACK Expresion RBRACK)
- / (LPAREN Expresion RPAREN)
- / NUM { return { node: "ExprConstNum", value: text() } }
+   LBRACK ListaDeExpresiones RBRACK
+ / HASH ID
+ / id:ID LPAREN exprList:ListaDeExpresiones RPAREN
+   { return { node: "ExprCall", id: id, exprList: exprList }; }
+ / id:ID LBRACK expr:Expresion RBRACK
+   { return { node: "ExprVecDeref", id: id, expr: expr }; }
+ / LPAREN expr:Expresion RPAREN
+   { return expr; }
+ / NUM
+   { return { node: "ExprConstNum", value: parseInt(text()) }; }
  / TRUE
+   { return { node: "ExprConstBool", value: true }; }
  / FALSE
+   { return { node: "ExprConstBool", value: false }; }
  / ID
+   { return { node: "ExprVar", value: text() }; }
 
-ID = [a-zA-Z][a-zA-Z0-9]*
+ID = [a-zA-Z][a-zA-Z0-9]* { return text(); }
 NUM = [0-9]+
 
 LPAREN = "("
@@ -104,4 +135,4 @@ WHILE = "while"
 _ = (Whitespace / Comment)*
 
 Whitespace = [ \t\n\r]
-Comment = "//"[^\n\r]* 
+Comment = "//"[^\n\r]*
