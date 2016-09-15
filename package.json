@@ -1,0 +1,26 @@
+{
+  "name": "cucaracha",
+  "version": "1.0.0",
+  "description": "## Herramienta generadora de parsers",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/unq-pgc-ag/cucaracha.git"
+  },
+  "author": "Rocio Amaya and Nahuel Garbezza",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/unq-pgc-ag/cucaracha/issues"
+  },
+  "homepage": "https://github.com/unq-pgc-ag/cucaracha#readme",
+  "dependencies": {
+    "pegjs": "^0.10.0"
+  }
+}
