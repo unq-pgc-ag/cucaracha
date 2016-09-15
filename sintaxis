@@ -1,7 +1,8 @@
 Programa = functions:(_ DeclaracionDeFuncion _)*
    { return {
        node: "Program",
-       functions: functions.map(function(f) { return f[1]; })
+       functions: functions.map(function(f) { return f[1]; }),
+       serialize: function () { return "hola"; }
      };
    }
 

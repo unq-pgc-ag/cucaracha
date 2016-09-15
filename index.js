@@ -1,34 +1,35 @@
 var peg = require('pegjs');
 var fs = require('fs');
 
-var ejemplos = [
-    ['tests/test00.input', 'tests/test00.expected'],
-    ['tests/test01.input', 'tests/test01.expected'],
-    ['tests/test02.input', 'tests/test02.expected'],
-    ['tests/test03.input', 'tests/test03.expected'],
-    ['tests/test04.input', 'tests/test04.expected'],
-    ['tests/test05.input', 'tests/test05.expected'],
-    ['tests/test06.input', 'tests/test06.expected'],
-    ['tests/test07.input', 'tests/test07.expected'],
-    ['tests/test08.input', 'tests/test08.expected'],
-    ['tests/test09.input', 'tests/test09.expected'],
-    ['tests/test10.input', 'tests/test10.expected'],
-];
+const ejemplos = [ '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
 
-fs.readFile('sintaxis', 'utf8', function (err, data) {
+fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {
     if (err) { return console.log('No se puede leer la sintaxis: ' + err); }
-    var parser = peg.generate(data);
+    var parser = peg.generate(contenidoGramatica);
     console.log('Gramatica generada correctamente!');
 
     ejemplos.forEach(function (ejemplo) {
-        fs.readFile(ejemplo[0], 'utf8', function (err, data) {
+        var rutaTestInput = 'tests/test' + ejemplo + '.input';
+        var rutaTestExpected = 'tests/test' + ejemplo + '.expected';
+        fs.readFile(rutaTestInput, 'utf8', function (err, contenidoTestInput) {
             if (err) { return console.log('No se pudo cargar el ejemplo: ' + err); }
 
-            console.log('Ejemplo cargado: ' + ejemplo[0]);
-            var results = parser.parse(data);
+            var ast = parser.parse(contenidoTestInput);
             console.log('Parseado correctamente!');
             console.log('AST generado:');
-            console.log(JSON.stringify(results, null, 2));
+            // console.log(JSON.stringify(ast, null, 2));
+
+            fs.readFile(rutaTestExpected, 'utf8', function (err, contenidoTestExpected) {
+                if (err) { return console.log('No se pudo cargar el resultado: ' + err); }
+
+                var resultado = ast.serialize();
+                if (contenidoTestExpected === resultado) {
+                    console.log(':-) Serialización del ejemplo ' + ejemplo + ' correcta.');
+                } else {
+                    console.log(':-( Serialización del ejemplo ' + ejemplo + ' fallida.');
+                    console.log(resultado);
+                }
+            });
         });
     });
 });

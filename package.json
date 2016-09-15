@@ -1,7 +1,7 @@
 {
   "name": "cucaracha",
   "version": "1.0.0",
-  "description": "## Herramienta generadora de parsers",
+  "description": "Implementación en Javascript del lenguaje Cucaracha",
   "main": "index.js",
   "directories": {
     "test": "tests"
