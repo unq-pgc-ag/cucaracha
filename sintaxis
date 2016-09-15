@@ -75,26 +75,12 @@ ListaDeExpresiones = first:Expresion? rest:(_ COMMA _ Expresion)*
 
 Expresion = ExpresionLogica
 
-// TODO: and y or se parsean al mismo tiempo, lo mismo con suma y resta
-ExpresionLogica = ExpresionAnd / ExpresionOr
-ExpresionAnd = expr:ExpresionLogicaAtomica rest:(_ AND _ ExpresionLogicaAtomica)*
+ExpresionLogica = expr:ExpresionLogicaAtomica
+   rest:((_ AND _ ExpresionLogicaAtomica) / (_ OR _ ExpresionLogicaAtomica))*
    { if (rest.length > 0) {
        return rest.reduce(function(acc, curr) {
          return {
-           node: "ExprAnd",
-           expr1: acc,
-           expr2: curr[3],
-         }
-       }, expr);
-     } else {
-       return expr;
-     }
-   }
-ExpresionOr = expr:ExpresionLogicaAtomica rest:(_ OR _ ExpresionLogicaAtomica)*
-   { if (rest.length > 0) {
-       return rest.reduce(function(acc, curr) {
-         return {
-           node: "ExprOr",
+           node: curr[1] == "and" ? "ExprAnd" : "ExprOr",
            expr1: acc,
            expr2: curr[3],
          }
@@ -123,27 +109,12 @@ ExpresionRelacional =
    { return { node: "ExprNe", expr1: expr1, expr2: expr2 }; }
  / ExpresionAditiva
 
-ExpresionAditiva = Suma / Resta
-
-Suma = expr:ExpresionMultiplicativa rest:(_ PLUS _ ExpresionMultiplicativa)*
+ExpresionAditiva = expr:ExpresionMultiplicativa
+   rest:((_ PLUS _ ExpresionMultiplicativa) / (_ MINUS _ ExpresionMultiplicativa))*
    { if (rest.length > 0) {
        return rest.reduce(function(acc, curr) {
          return {
-           node: "ExprAdd",
-           expr1: acc,
-           expr2: curr[3],
-         }
-       }, expr);
-     } else {
-       return expr;
-     }
-   }
-
-Resta = expr:ExpresionMultiplicativa rest:(_ MINUS _ ExpresionMultiplicativa)*
-   { if (rest.length > 0) {
-       return rest.reduce(function(acc, curr) {
-         return {
-           node: "ExprSub",
+           node: curr[1] == "+" ? "ExprAdd" : "ExprSub",
            expr1: acc,
            expr2: curr[3],
          }
