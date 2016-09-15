@@ -28,7 +28,12 @@ DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
 Parametros = LPAREN _ list:ListaParametros _ RPAREN
    { return list; }
 ListaParametros = first:Parametro? rest:(_ COMMA _ Parametro)*
-   { if(first) { return [first].concat(rest); } else { return []; } }
+   { if(first) {
+       return [first].concat(rest.map(function (r) { return r[3]; }));
+     } else {
+       return [];
+     }
+   }
 
 Parametro = id:ID _ COLON _ type:Tipo
    { return { node: "Parameter", id: id, type: type }; }
@@ -61,10 +66,16 @@ Instruccion =
    { return { node: "StmtCall", expressions: expressions }; }
 
 ListaDeExpresiones = first:Expresion? rest:(_ COMMA _ Expresion)*
-   { if(first) { return [first].concat(rest); } else { return []; } }
+   { if(first) {
+       return [first].concat(rest.map(function (r) { return r[3]; }));
+     } else {
+       return [];
+     }
+   }
 
 Expresion = ExpresionLogica
 
+// TODO: and y or se parsean al mismo tiempo, lo mismo con suma y resta
 ExpresionLogica = ExpresionAnd / ExpresionOr
 ExpresionAnd = expr:ExpresionLogicaAtomica rest:(_ AND _ ExpresionLogicaAtomica)*
    { if (rest.length > 0) {
