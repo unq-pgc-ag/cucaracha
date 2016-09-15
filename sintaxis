@@ -7,9 +7,23 @@ Programa = functions:(_ DeclaracionDeFuncion _)*
 
 DeclaracionDeFuncion = DeclaracionDeFuncionConTipos / DeclaracionDeFuncionSinTipos
 DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ type:Tipo _ block:Bloque
-   { return { node: "Function", id: id, params: params, type: type, block: block }; }
+   { return {
+       node: "Function",
+       id: id,
+       params: params,
+       type: type,
+       block: block
+     };
+   }
 DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
-   { return { node: "Function", id: id, params: params, type: "Unit", block: block }; }
+   { return {
+       node: "Function",
+       id: id,
+       params: params,
+       type: "Unit",
+       block: block
+     };
+   }
 
 Parametros = LPAREN _ list:ListaParametros _ RPAREN
    { return list; }
@@ -51,35 +65,102 @@ ListaDeExpresiones = first:Expresion? rest:(_ COMMA _ Expresion)*
 
 Expresion = ExpresionLogica
 
-ExpresionLogica =
-  ExpresionLogicaAtomica
-  (
-    (_ AND _ ExpresionLogicaAtomica) /
-    (_ OR _ ExpresionLogicaAtomica)
-  )*
+ExpresionLogica = ExpresionAnd / ExpresionOr
+ExpresionAnd = expr:ExpresionLogicaAtomica rest:(_ AND _ ExpresionLogicaAtomica)*
+   { if (rest.length > 0) {
+       return rest.reduce(function(acc, curr) {
+         return {
+           node: "ExprAnd",
+           expr1: acc,
+           expr2: curr[3],
+         }
+       }, expr);
+     } else {
+       return expr;
+     }
+   }
+ExpresionOr = expr:ExpresionLogicaAtomica rest:(_ OR _ ExpresionLogicaAtomica)*
+   { if (rest.length > 0) {
+       return rest.reduce(function(acc, curr) {
+         return {
+           node: "ExprOr",
+           expr1: acc,
+           expr2: curr[3],
+         }
+       }, expr);
+     } else {
+       return expr;
+     }
+   }
 
-ExpresionLogicaAtomica = (NOT _ ExpresionLogicaAtomica) / ExpresionRelacional
+ExpresionLogicaAtomica = Negacion / ExpresionRelacional
+Negacion = NOT _ expr:ExpresionLogicaAtomica
+   { return { node: "ExprNot", expr: expr }; }
 
-ExpresionRelacional = (ExpresionAditiva _ LE _ ExpresionAditiva)
- / (ExpresionAditiva _ GE _ ExpresionAditiva)
- / (ExpresionAditiva _ LT _ ExpresionAditiva)
- / (ExpresionAditiva _ GT _ ExpresionAditiva)
- / (ExpresionAditiva _ EQ _ ExpresionAditiva)
- / (ExpresionAditiva _ NE _ ExpresionAditiva)
+ExpresionRelacional =
+   expr1:ExpresionAditiva _ LE _ expr2:ExpresionAditiva
+   { return { node: "ExprLe", expr1: expr1, expr2: expr2 }; }
+ / expr1:ExpresionAditiva _ GE _ expr2:ExpresionAditiva
+   { return { node: "ExprGe", expr1: expr1, expr2: expr2 }; }
+ / expr1:ExpresionAditiva _ LT _ expr2:ExpresionAditiva
+   { return { node: "ExprLt", expr1: expr1, expr2: expr2 }; }
+ / expr1:ExpresionAditiva _ GT _ expr2:ExpresionAditiva
+   { return { node: "ExprGt", expr1: expr1, expr2: expr2 }; }
+ / expr1:ExpresionAditiva _ EQ _ expr2:ExpresionAditiva
+   { return { node: "ExprEq", expr1: expr1, expr2: expr2 }; }
+ / expr1:ExpresionAditiva _ NE _ expr2:ExpresionAditiva
+   { return { node: "ExprNe", expr1: expr1, expr2: expr2 }; }
  / ExpresionAditiva
 
-ExpresionAditiva =
-  ExpresionMultiplicativa
-  (
-    (_ PLUS _ ExpresionMultiplicativa) /
-    (_ MINUS _ ExpresionMultiplicativa)
-  )*
+ExpresionAditiva = Suma / Resta
 
-ExpresionMultiplicativa = ExpresionAtomica (_ TIMES _ ExpresionAtomica)*
+Suma = expr:ExpresionMultiplicativa rest:(_ PLUS _ ExpresionMultiplicativa)*
+   { if (rest.length > 0) {
+       return rest.reduce(function(acc, curr) {
+         return {
+           node: "ExprAdd",
+           expr1: acc,
+           expr2: curr[3],
+         }
+       }, expr);
+     } else {
+       return expr;
+     }
+   }
+
+Resta = expr:ExpresionMultiplicativa rest:(_ MINUS _ ExpresionMultiplicativa)*
+   { if (rest.length > 0) {
+       return rest.reduce(function(acc, curr) {
+         return {
+           node: "ExprSub",
+           expr1: acc,
+           expr2: curr[3],
+         }
+       }, expr);
+     } else {
+       return expr;
+     }
+   }
+
+ExpresionMultiplicativa = expr:ExpresionAtomica rest:(_ TIMES _ ExpresionAtomica)*
+   { if (rest.length > 0) {
+       return rest.reduce(function(acc, curr) {
+         return {
+           node: "ExprMul",
+           expr1: acc,
+           expr2: curr[3],
+         }
+       }, expr);
+     } else {
+       return expr;
+     }
+   }
 
 ExpresionAtomica =
-   LBRACK ListaDeExpresiones RBRACK
- / HASH ID
+   LBRACK exprs:ListaDeExpresiones RBRACK
+   { return { node: "ExprVecMake", exprs:exprs }; }
+ / HASH id:ID
+   { return { node: "ExprVecLength", id: id }; }
  / id:ID LPAREN exprList:ListaDeExpresiones RPAREN
    { return { node: "ExprCall", id: id, exprList: exprList }; }
  / id:ID LBRACK expr:Expresion RBRACK
