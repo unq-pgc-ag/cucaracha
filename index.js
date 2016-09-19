@@ -42,7 +42,7 @@ fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {
                 if (ast.estaBienFormado()) {
                     console.log(':-) Ejemplo ' + ejemplo + ' sin errores de tipos.');
                 } else {
-                    console.log(':-( Ejemplo ' + ejemplo + ' con errores de tipos.');
+                    console.log(':-( ERROR! Ejemplo ' + ejemplo + ' con errores de tipos.');
                 }
             });
         });

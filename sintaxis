@@ -1,16 +1,41 @@
+{
+  function startIdent(node, ident) {
+    return ident + "(" + node + "\n";
+  }
+
+  function identBinaryExpr(ident, newIdent, node, expr1, expr2) {
+    return startIdent(node, ident)
+       + expr1.serialize(newIdent)
+       + expr2.serialize(newIdent)
+       + ident + ")\n";
+  }
+
+  function identId(id, newIdent, lastIdent) {
+    return newIdent + id + "\n" + lastIdent;
+  }
+
+  function lastIdent(ident) {
+    return ident + ")\n";
+  }
+
+  function serializeList(list, ident) {
+    return list.map(function(e) { return e.serialize(ident); }).join('');
+  }
+}
+
 Programa = functions:(_ DeclaracionDeFuncion _)*
    { return {
        node: "Program",
        functions: functions.map(function(f) { return f[1]; }),
        serialize: function () {
-         var hijos = this.functions.map(function(f) { return f.serialize("  "); }).join('');
-         return "(" + this.node + "\n" + hijos + ")\n";
+         var hijos = serializeList(this.functions, "  ");
+         return startIdent(this.node, "") + hijos + ")\n";
        },
        estaBienFormado: function() {
          var funcionesBienFormadas = this.functions.reduce(function(res, f){ return res && f.estaBienFormado() }, true);
          var nombresDeFunciones = this.functions.map(function(f) { return f.id; });
-         var redefinePutChar = nombresDeFunciones.filter(function(f) { return f == "putChar" }).length > 0;
-         var redefinePutNum = nombresDeFunciones.filter(function(f) { return f == "putNum" }).length > 0;
+         var redefinePutChar = nombresDeFunciones.indexOf("putChar") != -1;
+         var redefinePutNum = nombresDeFunciones.indexOf("putNum") != -1;
          var funcionesNoRepetidas = this.functions.reduce(function(res, f){
            var index = nombresDeFunciones.indexOf(f.id);
            nombresDeFunciones.splice(index, 1);
@@ -34,17 +59,17 @@ DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ tipo:Ti
        block: block,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var params = this.params.map(function(p) { return p.serialize(newIdent); }).join('');
-         return ident + "(" + this.node + "\n" + newIdent
-           + this.id + "\n" + newIdent
+         var params = serializeList(this.params, newIdent);
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, newIdent)
            + this.tipo + "\n"
            + params
            + this.block.serialize(newIdent)
-           + ident + ")\n";
+           + lastIdent(ident);
        },
        estaBienFormado: function() {
-                return tipo != "Vec";
-              }
+        return tipo != "Vec";
+      }
      };
    }
 DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
@@ -56,17 +81,17 @@ DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
        block: block,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var params = this.params.map(function(p) { return p.serialize(newIdent); }).join('');
-         return ident + "(" + this.node + "\n" + newIdent
-           + this.id + "\n" + newIdent
+         var params = serializeList(this.params, newIdent);
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, newIdent)
            + this.tipo + "\n"
            + params
            + this.block.serialize(newIdent)
-           + ident + ")\n";
+           + lastIdent(ident);
        },
        estaBienFormado: function() {
-                return true;
-              }
+        return true;
+      }
      };
    }
 
@@ -85,9 +110,9 @@ Parametro = id:ID _ COLON _ type:Tipo
        node: "Parameter", id: id, type: type,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n" + newIdent
-           + this.id + "\n" + newIdent
-           + this.type + "\n" + ident + ")\n";
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, newIdent)
+           + this.type + "\n" + lastIdent(ident);
        }
      };
    }
@@ -103,10 +128,9 @@ Bloque = LBRACE _ instructions:ListaDeInstrucciones _ RBRACE
        instructions: instructions,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var instructions = this.instructions.map(function(i) { return i.serialize(newIdent); }).join('');
-         return ident + "("
-           + this.node + "\n"
-           + instructions + ident + ")\n";
+         var instructions = serializeList(this.instructions, newIdent);
+         return startIdent(this.node, ident)
+           + instructions + lastIdent(ident);
        }
      };
    }
@@ -120,10 +144,10 @@ Instruccion =
        node: "StmtAssign", id: id, expr: expr,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n" + newIdent
-           + this.id + "\n"
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, "")
            + this.expr.serialize(newIdent)
-           + ident + ")\n";
+           + lastIdent(ident);
        }
      };
    }
@@ -133,11 +157,11 @@ Instruccion =
        node: "StmtVecAssign", id: id, expr1: expr1, expr2: expr2,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n" + newIdent
-           + this.id + "\n"
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, "")
            + this.expr1.serialize(newIdent)
            + this.expr2.serialize(newIdent)
-           + ident + ")\n";
+           + lastIdent(ident);
        }
      };
    }
@@ -147,11 +171,11 @@ Instruccion =
        node: "StmtIfElse", expr: expr, block1: block1, block2: block2,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n"
+         return startIdent(this.node, ident)
                     + this.expr.serialize(newIdent)
                     + this.block1.serialize(newIdent)
                     + this.block2.serialize(newIdent)
-                    + ident + ")\n";
+                    + lastIdent(ident);
        }
      };
    }
@@ -161,10 +185,10 @@ Instruccion =
        node: "StmtIf", expr: expr, block: block,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n"
+         return startIdent(this.node, ident)
                              + this.expr.serialize(newIdent)
                              + this.block.serialize(newIdent)
-                             + ident + ")\n";
+                             + lastIdent(ident);
        }
      };
    }
@@ -174,10 +198,10 @@ Instruccion =
        node: "StmtWhile", expr: expr, block: block,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-          return ident + "(" + this.node + "\n"
+          return startIdent(this.node, ident)
             + this.expr.serialize(newIdent)
             + this.block.serialize(newIdent)
-            + ident + ")\n";
+            + lastIdent(ident);
        }
      };
    }
@@ -187,9 +211,9 @@ Instruccion =
        node: "StmtReturn", expr: expr,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n"
+         return startIdent(this.node, ident)
              + this.expr.serialize(newIdent)
-             + ident + ")\n";
+             + lastIdent(ident);
        }
      };
    }
@@ -199,12 +223,11 @@ Instruccion =
        node: "StmtCall", id: id, expressions: expressions,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var params = this.expressions.map(function(p) { return p.serialize(newIdent); }).join('');
-         return ident + "("
-           + this.node + "\n" + newIdent
-           + this.id + "\n"
+         var params = serializeList(this.expressions, newIdent);
+         return startIdent(this.node, ident)
+           + identId(this.id, newIdent, "")
            + params
-           + ident + ")\n";
+           + lastIdent(ident);
        }
      };
    }
@@ -229,10 +252,7 @@ ExpresionLogica = expr:ExpresionLogicaAtomica
            expr2: curr[3],
            serialize: function(ident) {
              var newIdent = ident + "  ";
-              return ident + "(" + this.node + "\n"
-                + this.expr1.serialize(newIdent)
-                + this.expr2.serialize(newIdent)
-                + ident + ")\n";
+             return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
            }
          }
        }, expr);
@@ -247,9 +267,9 @@ Negacion = NOT _ expr:ExpresionLogicaAtomica
        node: "ExprNot", expr: expr,
        serialize: function(ident) {
         var newIdent = ident + "  ";
-         return ident + "(" + this.node + "\n"
+         return startIdent(this.node, ident)
            + this.expr.serialize(newIdent)
-           + ident + ")\n";
+           + lastIdent(ident);
       }
      };
    }
@@ -259,67 +279,50 @@ ExpresionRelacional =
    { return {
      node: "ExprLe", expr1: expr1, expr2: expr2,
       serialize: function(ident) {
-                   var newIdent = ident + "  ";
-                    return ident + "(" + this.node + "\n"
-                      + this.expr1.serialize(newIdent)
-                      + this.expr2.serialize(newIdent)
-                      + ident + ")\n";
-                 }};
+       var newIdent = ident + "  ";
+        return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+      }
+     };
    }
  / expr1:ExpresionAditiva _ GE _ expr2:ExpresionAditiva
    { return {
    node: "ExprGe", expr1: expr1, expr2: expr2,
     serialize: function(ident) {
-                 var newIdent = ident + "  ";
-                  return ident + "(" + this.node + "\n"
-                    + this.expr1.serialize(newIdent)
-                    + this.expr2.serialize(newIdent)
-                    + ident + ")\n";
-               }};
+     var newIdent = ident + "  ";
+      return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+   }};
    }
  / expr1:ExpresionAditiva _ LT _ expr2:ExpresionAditiva
    { return {
    node: "ExprLt", expr1: expr1, expr2: expr2,
     serialize: function(ident) {
-                 var newIdent = ident + "  ";
-                  return ident + "(" + this.node + "\n"
-                    + this.expr1.serialize(newIdent)
-                    + this.expr2.serialize(newIdent)
-                    + ident + ")\n";
-               }};
+     var newIdent = ident + "  ";
+      return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+   }};
    }
  / expr1:ExpresionAditiva _ GT _ expr2:ExpresionAditiva
    { return {
    node: "ExprGt", expr1: expr1, expr2: expr2,
     serialize: function(ident) {
-                 var newIdent = ident + "  ";
-                  return ident + "(" + this.node + "\n"
-                    + this.expr1.serialize(newIdent)
-                    + this.expr2.serialize(newIdent)
-                    + ident + ")\n";
-               }};
+     var newIdent = ident + "  ";
+      return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+   }};
    }
  / expr1:ExpresionAditiva _ EQ _ expr2:ExpresionAditiva
    { return {
    node: "ExprEq", expr1: expr1, expr2: expr2,
     serialize: function(ident) {
-                 var newIdent = ident + "  ";
-                  return ident + "(" + this.node + "\n"
-                    + this.expr1.serialize(newIdent)
-                    + this.expr2.serialize(newIdent)
-                    + ident + ")\n";
-               }};
+     var newIdent = ident + "  ";
+      return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+   }};
    }
  / expr1:ExpresionAditiva _ NE _ expr2:ExpresionAditiva
    { return {
    node: "ExprNe", expr1: expr1, expr2: expr2,
     serialize: function(ident) {
-                 var newIdent = ident + "  ";
-                  return ident + "(" + this.node + "\n"
-                    + this.expr1.serialize(newIdent)
-                    + this.expr2.serialize(newIdent)
-                    + ident + ")\n";
-               }};
+     var newIdent = ident + "  ";
+      return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
+   }};
    }
  / ExpresionAditiva
 
@@ -333,10 +336,7 @@ ExpresionAditiva = expr:ExpresionMultiplicativa
            expr2: curr[3],
            serialize: function(ident) {
             var newIdent = ident + "  ";
-             return ident + "(" + this.node + "\n"
-               + this.expr1.serialize(newIdent)
-               + this.expr2.serialize(newIdent)
-               + ident + ")\n";
+             return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
           }
          }
        }, expr);
@@ -354,10 +354,7 @@ ExpresionMultiplicativa = expr:ExpresionAtomica rest:(_ TIMES _ ExpresionAtomica
            expr2: curr[3],
            serialize: function(ident) {
             var newIdent = ident + "  ";
-             return ident + "(" + this.node + "\n"
-               + this.expr1.serialize(newIdent)
-               + this.expr2.serialize(newIdent)
-               + ident + ")\n";
+             return identBinaryExpr(ident, newIdent, this.node, this.expr1, this.expr2);
           }
          }
        }, expr);
@@ -372,11 +369,10 @@ ExpresionAtomica =
        node: "ExprVecMake", exprs:exprs,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var params = this.exprs.map(function(p) { return p.serialize(newIdent); }).join('');
-          return ident + "("
-            + this.node + "\n"
+         var params = serializeList(this.exprs, newIdent);
+          return startIdent(this.node, ident)
             + params
-            + ident + ")\n";
+            + lastIdent(ident);
        }
      };
    }
@@ -385,8 +381,9 @@ ExpresionAtomica =
       node: "ExprVecLength", id: id,
       serialize: function(ident) {
         var newIdent = ident + "  ";
-        return ident + "(" + this.node + "\n" + newIdent
-         + this.id + "\n" + ident + ")\n";
+        return startIdent(this.node, ident)
+         + identId(this.id, newIdent, "")
+         + lastIdent(ident);
       }
     };
    }
@@ -395,12 +392,11 @@ ExpresionAtomica =
        node: "ExprCall", id: id, exprList: exprList,
        serialize: function(ident) {
          var newIdent = ident + "  ";
-         var params = this.exprList.map(function(p) { return p.serialize(newIdent); }).join('');
-           return ident + "("
-             + this.node + "\n" + newIdent
-             + this.id + "\n"
+         var params = serializeList(this.exprList, newIdent);
+           return startIdent(this.node, ident)
+             + identId(this.id, newIdent, "")
              + params
-             + ident + ")\n";
+             + lastIdent(ident);
        }
      };
     }
@@ -409,10 +405,10 @@ ExpresionAtomica =
       node: "ExprVecDeref", id: id, expr: expr,
       serialize: function(ident) {
         var newIdent = ident + "  ";
-        return ident + "(" + this.node + "\n" + newIdent
-                       + this.id + "\n"
-                       + this.expr.serialize(newIdent)
-                       + ident + ")\n";
+        return startIdent(this.node, ident)
+           + identId(this.id, newIdent, "")
+           + this.expr.serialize(newIdent)
+           + lastIdent(ident);
       }
     };
    }
@@ -423,9 +419,9 @@ ExpresionAtomica =
      node: "ExprConstNum", value: text(),
      serialize: function(ident) {
        var newIdent = ident + "  ";
-       return ident + "(" + this.node + "\n" + newIdent
-       + this.value + "\n"
-       + ident + ")\n";
+       return startIdent(this.node, ident)
+       + identId(this.value, newIdent, "")
+       + lastIdent(ident);
      }
    };
   }
@@ -434,9 +430,9 @@ ExpresionAtomica =
      node: "ExprConstBool", value: "True",
      serialize: function(ident) {
        var newIdent = ident + "  ";
-       return ident + "(" + this.node + "\n" + newIdent
-              + this.value + "\n"
-              + ident + ")\n";
+       return startIdent(this.node, ident)
+        + identId(this.value, newIdent, "")
+        + lastIdent(ident);
      }
    };
   }
@@ -445,9 +441,9 @@ ExpresionAtomica =
      node: "ExprConstBool", value: "False",
      serialize: function(ident) {
        var newIdent = ident + "  ";
-       return ident + "(" + this.node + "\n" + newIdent
-              + this.value + "\n"
-              + ident + ")\n";
+       return startIdent(this.node, ident)
+        + identId(this.value, newIdent, "")
+        + lastIdent(ident);
      }
    };
   }
@@ -456,9 +452,9 @@ ExpresionAtomica =
      node: "ExprVar", value: text(),
      serialize: function(ident) {
        var newIdent = ident + "  ";
-       return ident + "("
-         + this.node + "\n" + newIdent
-         + this.value + "\n" + ident + ")\n";
+       return startIdent(this.node, ident)
+         + identId(this.value, newIdent, "")
+         + lastIdent(ident);
      }
    };
   }
