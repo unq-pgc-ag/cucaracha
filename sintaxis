@@ -1,24 +1,5 @@
 Programa = functions:(_ DeclaracionDeFuncion _)*
-   { return {
-       node: "Program",
-       functions: functions.map(function(f) { return f[1]; }),
-       estaBienFormado: function() {
-         var funcionesBienFormadas = this.functions.reduce(function(res, f){ return res && f.estaBienFormado() }, true);
-         var nombresDeFunciones = this.functions.map(function(f) { return f.id; });
-         var redefinePutChar = nombresDeFunciones.indexOf("putChar") != -1;
-         var redefinePutNum = nombresDeFunciones.indexOf("putNum") != -1;
-         var funcionesNoRepetidas = this.functions.reduce(function(res, f){
-           var index = nombresDeFunciones.indexOf(f.id);
-           nombresDeFunciones.splice(index, 1);
-           return res && nombresDeFunciones.indexOf(f.id) == -1
-         }, true);
-         var listaDeMains = this.functions.filter(function(f) { return f.id == "main" });
-         var main = listaDeMains[0];
-         var verificarMain = listaDeMains.length == 1 && main && main.tipo == "Unit";
-         return funcionesNoRepetidas && funcionesBienFormadas && verificarMain && !redefinePutChar && !redefinePutNum;
-       }
-     };
-   }
+   { return { node: "Program", functions: functions.map(function(f) { return f[1]; }) }; }
 
 DeclaracionDeFuncion = DeclaracionDeFuncionConTipos / DeclaracionDeFuncionSinTipos
 DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ tipo:Tipo _ block:Bloque
@@ -28,9 +9,6 @@ DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ tipo:Ti
        params: params,
        tipo: tipo,
        block: block,
-       estaBienFormado: function() {
-        return tipo != "Vec";
-      }
      };
    }
 DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
@@ -40,9 +18,6 @@ DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
        params: params,
        tipo: "Unit",
        block: block,
-       estaBienFormado: function() {
-        return true;
-      }
      };
    }
 

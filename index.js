@@ -1,6 +1,7 @@
 var peg = require('pegjs');
 var fs = require('fs');
 var serializer = require('./src/serializer');
+var type_checker = require('./src/type_checker');
 
 const ejemplos = [
     // ejemplos bien formados
@@ -40,7 +41,7 @@ fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {
                     console.log(':-( Serialización del ejemplo ' + ejemplo + ' fallida.');
                     console.log(resultado);
                 }
-                if (ast.estaBienFormado()) {
+                if (type_checker.validate(ast)) {
                     console.log(':-) Ejemplo ' + ejemplo + ' sin errores de tipos.');
                 } else {
                     console.log(':-( ERROR! Ejemplo ' + ejemplo + ' con errores de tipos.');

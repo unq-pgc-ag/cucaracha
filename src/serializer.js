@@ -29,7 +29,7 @@ function serializeBinaryExpr(ast, ident) {
     + ident + ")\n";
 }
 
-nodes = {
+SerializationFunctionNodes = {
   "Program" : function (ast, ident) {
     return startIdent(ast, ident)
       + serializeList(ast.functions, "  ")
@@ -173,7 +173,7 @@ nodes = {
 };
 
 function serialize(ast, ident) {
-  return nodes[ast.node](ast, ident || '');
+  return SerializationFunctionNodes[ast.node](ast, ident || '');
 }
 
 module.exports = { serialize: serialize };
