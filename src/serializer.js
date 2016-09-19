@@ -1,16 +1,9 @@
-function startIdent(node, ident) {
-  return ident + "(" + node + "\n";
+function startIdent(ast, ident) {
+  return ident + "(" + ast.node + "\n";
 }
 
-function identBinaryExpr(ident, newIdent, ast) {
-  return startIdent(ast.node, ident)
-    + serialize(ast.expr1, newIdent)
-    + serialize(ast.expr2, newIdent)
-    + ident + ")\n";
-}
-
-function identId(id, newIdent, lastIdent) {
-  return newIdent + id + "\n" + lastIdent;
+function identId(ast, newIdent, lastIdent) {
+  return newIdent + ast.id + "\n" + lastIdent;
 }
 
 function lastIdent(ident) {
@@ -23,59 +16,63 @@ function serializeList(list, ident) {
 
 function serializeValue(ast, ident) {
   var newIdent = ident + "  ";
-  return startIdent(ast.node, ident)
-    + identId(ast.value, newIdent, "")
+  return startIdent(ast, ident)
+    + newIdent + ast.value + "\n"
     + lastIdent(ident);
 }
 
 function serializeBinaryExpr(ast, ident) {
   var newIdent = ident + "  ";
-  return identBinaryExpr(ident, newIdent, ast);
+  return startIdent(ast, ident)
+    + serialize(ast.expr1, newIdent)
+    + serialize(ast.expr2, newIdent)
+    + ident + ")\n";
 }
 
 nodes = {
   "Program" : function (ast, ident) {
-    var hijos = serializeList(ast.functions, "  ");
-    return startIdent(ast.node, ident) + hijos + ")\n";
+    return startIdent(ast, ident)
+      + serializeList(ast.functions, "  ")
+      + ")\n";
   },
 
   "Function" : function(ast, ident) {
     var newIdent = ident + "  ";
-    var params = serializeList(ast.params, newIdent);
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, newIdent)
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, newIdent)
       + ast.tipo + "\n"
-      + params
+      + serializeList(ast.params, newIdent)
       + serialize(ast.block, newIdent)
       + lastIdent(ident);
   },
 
   "Parameter" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, newIdent)
-      + ast.type + "\n" + lastIdent(ident);
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, newIdent)
+      + ast.type + "\n"
+      + lastIdent(ident);
   },
 
   "Block" : function(ast, ident) {
     var newIdent = ident + "  ";
-    var instructions = serializeList(ast.instructions, newIdent);
-    return startIdent(ast.node, ident)
-      + instructions + lastIdent(ident);
+    return startIdent(ast, ident)
+      + serializeList(ast.instructions, newIdent)
+      + lastIdent(ident);
   },
 
   "StmtAssign" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
       + serialize(ast.expr, newIdent)
       + lastIdent(ident);
   },
 
   "StmtVecAssign" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
       + serialize(ast.expr1, newIdent)
       + serialize(ast.expr2, newIdent)
       + lastIdent(ident);
@@ -83,7 +80,7 @@ nodes = {
 
   "StmtIf" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
+    return startIdent(ast, ident)
       + serialize(ast.expr, newIdent)
       + serialize(ast.block, newIdent)
       + lastIdent(ident);
@@ -91,7 +88,7 @@ nodes = {
 
   "StmtIfElse" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
+    return startIdent(ast, ident)
       + serialize(ast.expr, newIdent)
       + serialize(ast.block1, newIdent)
       + serialize(ast.block2, newIdent)
@@ -100,7 +97,7 @@ nodes = {
 
   "StmtWhile" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
+    return startIdent(ast, ident)
       + serialize(ast.expr, newIdent)
       + serialize(ast.block, newIdent)
       + lastIdent(ident);
@@ -108,17 +105,16 @@ nodes = {
 
   "StmtReturn" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
+    return startIdent(ast, ident)
       + serialize(ast.expr, newIdent)
       + lastIdent(ident);
   },
 
   "StmtCall" : function(ast, ident) {
     var newIdent = ident + "  ";
-    var params = serializeList(ast.expressions, newIdent);
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
-      + params
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
+      + serializeList(ast.expressions, newIdent)
       + lastIdent(ident);
   },
 
@@ -136,39 +132,37 @@ nodes = {
 
   "ExprNot" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
+    return startIdent(ast, ident)
       + serialize(ast.expr, newIdent)
       + lastIdent(ident);
   },
 
   "ExprVecMake" : function(ast, ident) {
     var newIdent = ident + "  ";
-    var params = serializeList(ast.exprs, newIdent);
-    return startIdent(ast.node, ident)
-      + params
+    return startIdent(ast, ident)
+      + serializeList(ast.exprs, newIdent)
       + lastIdent(ident);
   },
 
   "ExprVecLength" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
       + lastIdent(ident);
   },
 
   "ExprCall" : function(ast, ident) {
     var newIdent = ident + "  ";
-    var params = serializeList(ast.exprList, newIdent);
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
-      + params
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
+      + serializeList(ast.exprList, newIdent)
       + lastIdent(ident);
   },
 
   "ExprVecDeref" : function(ast, ident) {
     var newIdent = ident + "  ";
-    return startIdent(ast.node, ident)
-      + identId(ast.id, newIdent, "")
+    return startIdent(ast, ident)
+      + identId(ast, newIdent, "")
       + serialize(ast.expr, newIdent)
       + lastIdent(ident);
   },
