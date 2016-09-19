@@ -1,0 +1,20 @@
+(Program
+  (Function
+    main
+    Unit
+    (Block
+    )
+  )
+  (Function
+    mal
+    Unit
+    (Block
+    )
+  )
+  (Function
+    mal
+    Unit
+    (Block
+    )
+  )
+)

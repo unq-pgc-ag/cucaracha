@@ -5,6 +5,21 @@ Programa = functions:(_ DeclaracionDeFuncion _)*
        serialize: function () {
          var hijos = this.functions.map(function(f) { return f.serialize("  "); }).join('');
          return "(" + this.node + "\n" + hijos + ")\n";
+       },
+       estaBienFormado: function() {
+         var funcionesBienFormadas = this.functions.reduce(function(res, f){ return res && f.estaBienFormado() }, true);
+         var nombresDeFunciones = this.functions.map(function(f) { return f.id; });
+         var redefinePutChar = nombresDeFunciones.filter(function(f) { return f == "putChar" }).length > 0;
+         var redefinePutNum = nombresDeFunciones.filter(function(f) { return f == "putNum" }).length > 0;
+         var funcionesNoRepetidas = this.functions.reduce(function(res, f){
+           var index = nombresDeFunciones.indexOf(f.id);
+           nombresDeFunciones.splice(index, 1);
+           return res && nombresDeFunciones.indexOf(f.id) == -1
+         }, true);
+         var listaDeMains = this.functions.filter(function(f) { return f.id == "main" });
+         var main = listaDeMains[0];
+         var verificarMain = listaDeMains.length == 1 && main && main.tipo == "Unit";
+         return funcionesNoRepetidas && funcionesBienFormadas && verificarMain && !redefinePutChar && !redefinePutNum;
        }
      };
    }
@@ -26,7 +41,10 @@ DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ tipo:Ti
            + params
            + this.block.serialize(newIdent)
            + ident + ")\n";
-       }
+       },
+       estaBienFormado: function() {
+                return tipo != "Vec";
+              }
      };
    }
 DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
@@ -34,18 +52,21 @@ DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
        node: "Function",
        id: id,
        params: params,
-       type: "Unit",
+       tipo: "Unit",
        block: block,
        serialize: function(ident) {
          var newIdent = ident + "  ";
          var params = this.params.map(function(p) { return p.serialize(newIdent); }).join('');
          return ident + "(" + this.node + "\n" + newIdent
            + this.id + "\n" + newIdent
-           + "Unit" + "\n"
+           + this.tipo + "\n"
            + params
            + this.block.serialize(newIdent)
            + ident + ")\n";
-       }
+       },
+       estaBienFormado: function() {
+                return true;
+              }
      };
    }
 
