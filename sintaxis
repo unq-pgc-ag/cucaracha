@@ -2,18 +2,31 @@ Programa = functions:(_ DeclaracionDeFuncion _)*
    { return {
        node: "Program",
        functions: functions.map(function(f) { return f[1]; }),
-       serialize: function () { return "hola"; }
+       serialize: function () {
+         var hijos = this.functions.map(function(f) { return f.serialize("  "); }).join('');
+         return "(" + this.node + "\n" + hijos + ")\n";
+       }
      };
    }
 
 DeclaracionDeFuncion = DeclaracionDeFuncionConTipos / DeclaracionDeFuncionSinTipos
-DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ type:Tipo _ block:Bloque
+DeclaracionDeFuncionConTipos = FUN _ id:ID _ params:Parametros _ COLON _ tipo:Tipo _ block:Bloque
    { return {
        node: "Function",
        id: id,
        params: params,
-       type: type,
-       block: block
+       tipo: tipo,
+       block: block,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var params = this.params.map(function(p) { return p.serialize(newIdent); }).join('');
+         return ident + "(" + this.node + "\n" + newIdent
+           + this.id + "\n" + newIdent
+           + this.tipo + "\n"
+           + params
+           + this.block.serialize(newIdent)
+           + ident + ")\n";
+       }
      };
    }
 DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
@@ -22,7 +35,17 @@ DeclaracionDeFuncionSinTipos = FUN _ id:ID _ params:Parametros _ block:Bloque
        id: id,
        params: params,
        type: "Unit",
-       block: block
+       block: block,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var params = this.params.map(function(p) { return p.serialize(newIdent); }).join('');
+         return ident + "(" + this.node + "\n" + newIdent
+           + this.id + "\n" + newIdent
+           + "Unit" + "\n"
+           + params
+           + this.block.serialize(newIdent)
+           + ident + ")\n";
+       }
      };
    }
 
@@ -37,7 +60,16 @@ ListaParametros = first:Parametro? rest:(_ COMMA _ Parametro)*
    }
 
 Parametro = id:ID _ COLON _ type:Tipo
-   { return { node: "Parameter", id: id, type: type }; }
+   { return {
+       node: "Parameter", id: id, type: type,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n" + newIdent
+           + this.id + "\n" + newIdent
+           + this.type + "\n" + ident + ")\n";
+       }
+     };
+   }
 
 Tipo =
    INT  { return "Int"; }
@@ -45,26 +77,116 @@ Tipo =
  / VEC  { return "Vec"; }
 
 Bloque = LBRACE _ instructions:ListaDeInstrucciones _ RBRACE
-   { return { node: "Block", instructions: instructions }; }
+   { return {
+       node: "Block",
+       instructions: instructions,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var instructions = this.instructions.map(function(i) { return i.serialize(newIdent); }).join('');
+         return ident + "("
+           + this.node + "\n"
+           + instructions + ident + ")\n";
+       }
+     };
+   }
 
 ListaDeInstrucciones = instrs:(_ Instruccion _)*
    { return instrs.map(function(i){ return i[1]; } ); }
 
 Instruccion =
    id:ID _ ASSIGN _ expr:Expresion
-   { return { node: "StmtAssign", id: id, expr: expr }; }
+   { return {
+       node: "StmtAssign", id: id, expr: expr,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n" + newIdent
+           + this.id + "\n"
+           + this.expr.serialize(newIdent)
+           + ident + ")\n";
+       }
+     };
+   }
+
  / id:ID _ LBRACK _ expr1:Expresion _ RBRACK _ ASSIGN _ expr2:Expresion
-   { return { node: "StmtVecAssign", id: id, expr1: expr1, expr2: expr2 }; }
+   { return {
+       node: "StmtVecAssign", id: id, expr1: expr1, expr2: expr2,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n" + newIdent
+           + this.id + "\n"
+           + this.expr1.serialize(newIdent)
+           + this.expr2.serialize(newIdent)
+           + ident + ")\n";
+       }
+     };
+   }
+
  / IF _ expr:Expresion _ block1:Bloque _ ELSE _ block2:Bloque
-   { return { node: "StmtIfElse", expr: expr, block1: block1, block2: block2 }; }
+   { return {
+       node: "StmtIfElse", expr: expr, block1: block1, block2: block2,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n"
+                    + this.expr.serialize(newIdent)
+                    + this.block1.serialize(newIdent)
+                    + this.block2.serialize(newIdent)
+                    + ident + ")\n";
+       }
+     };
+   }
+
  / IF _ expr:Expresion _ block:Bloque
-   { return { node: "StmtIf", expr: expr, block: block }; }
+   { return {
+       node: "StmtIf", expr: expr, block: block,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n"
+                             + this.expr.serialize(newIdent)
+                             + this.block.serialize(newIdent)
+                             + ident + ")\n";
+       }
+     };
+   }
+
  / WHILE _ expr:Expresion _ block:Bloque
-   { return { node: "StmtWhile", expr: expr, block: block }; }
+   { return {
+       node: "StmtWhile", expr: expr, block: block,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+          return ident + "(" + this.node + "\n"
+            + this.expr.serialize(newIdent)
+            + this.block.serialize(newIdent)
+            + ident + ")\n";
+       }
+     };
+   }
+
  / RETURN _ expr:Expresion
-   { return { node: "StmtReturn", expr: expr }; }
+   { return {
+       node: "StmtReturn", expr: expr,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n"
+             + this.expr.serialize(newIdent)
+             + ident + ")\n";
+       }
+     };
+   }
+
  / id:ID LPAREN expressions:ListaDeExpresiones RPAREN
-   { return { node: "StmtCall", expressions: expressions }; }
+   { return {
+       node: "StmtCall", id: id, expressions: expressions,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var params = this.expressions.map(function(p) { return p.serialize(newIdent); }).join('');
+         return ident + "("
+           + this.node + "\n" + newIdent
+           + this.id + "\n"
+           + params
+           + ident + ")\n";
+       }
+     };
+   }
 
 ListaDeExpresiones = first:Expresion? rest:(_ COMMA _ Expresion)*
    { if(first) {
@@ -84,6 +206,13 @@ ExpresionLogica = expr:ExpresionLogicaAtomica
            node: curr[1] == "and" ? "ExprAnd" : "ExprOr",
            expr1: acc,
            expr2: curr[3],
+           serialize: function(ident) {
+             var newIdent = ident + "  ";
+              return ident + "(" + this.node + "\n"
+                + this.expr1.serialize(newIdent)
+                + this.expr2.serialize(newIdent)
+                + ident + ")\n";
+           }
          }
        }, expr);
      } else {
@@ -93,21 +222,84 @@ ExpresionLogica = expr:ExpresionLogicaAtomica
 
 ExpresionLogicaAtomica = Negacion / ExpresionRelacional
 Negacion = NOT _ expr:ExpresionLogicaAtomica
-   { return { node: "ExprNot", expr: expr }; }
+   { return {
+       node: "ExprNot", expr: expr,
+       serialize: function(ident) {
+        var newIdent = ident + "  ";
+         return ident + "(" + this.node + "\n"
+           + this.expr.serialize(newIdent)
+           + ident + ")\n";
+      }
+     };
+   }
 
 ExpresionRelacional =
    expr1:ExpresionAditiva _ LE _ expr2:ExpresionAditiva
-   { return { node: "ExprLe", expr1: expr1, expr2: expr2 }; }
+   { return {
+     node: "ExprLe", expr1: expr1, expr2: expr2,
+      serialize: function(ident) {
+                   var newIdent = ident + "  ";
+                    return ident + "(" + this.node + "\n"
+                      + this.expr1.serialize(newIdent)
+                      + this.expr2.serialize(newIdent)
+                      + ident + ")\n";
+                 }};
+   }
  / expr1:ExpresionAditiva _ GE _ expr2:ExpresionAditiva
-   { return { node: "ExprGe", expr1: expr1, expr2: expr2 }; }
+   { return {
+   node: "ExprGe", expr1: expr1, expr2: expr2,
+    serialize: function(ident) {
+                 var newIdent = ident + "  ";
+                  return ident + "(" + this.node + "\n"
+                    + this.expr1.serialize(newIdent)
+                    + this.expr2.serialize(newIdent)
+                    + ident + ")\n";
+               }};
+   }
  / expr1:ExpresionAditiva _ LT _ expr2:ExpresionAditiva
-   { return { node: "ExprLt", expr1: expr1, expr2: expr2 }; }
+   { return {
+   node: "ExprLt", expr1: expr1, expr2: expr2,
+    serialize: function(ident) {
+                 var newIdent = ident + "  ";
+                  return ident + "(" + this.node + "\n"
+                    + this.expr1.serialize(newIdent)
+                    + this.expr2.serialize(newIdent)
+                    + ident + ")\n";
+               }};
+   }
  / expr1:ExpresionAditiva _ GT _ expr2:ExpresionAditiva
-   { return { node: "ExprGt", expr1: expr1, expr2: expr2 }; }
+   { return {
+   node: "ExprGt", expr1: expr1, expr2: expr2,
+    serialize: function(ident) {
+                 var newIdent = ident + "  ";
+                  return ident + "(" + this.node + "\n"
+                    + this.expr1.serialize(newIdent)
+                    + this.expr2.serialize(newIdent)
+                    + ident + ")\n";
+               }};
+   }
  / expr1:ExpresionAditiva _ EQ _ expr2:ExpresionAditiva
-   { return { node: "ExprEq", expr1: expr1, expr2: expr2 }; }
+   { return {
+   node: "ExprEq", expr1: expr1, expr2: expr2,
+    serialize: function(ident) {
+                 var newIdent = ident + "  ";
+                  return ident + "(" + this.node + "\n"
+                    + this.expr1.serialize(newIdent)
+                    + this.expr2.serialize(newIdent)
+                    + ident + ")\n";
+               }};
+   }
  / expr1:ExpresionAditiva _ NE _ expr2:ExpresionAditiva
-   { return { node: "ExprNe", expr1: expr1, expr2: expr2 }; }
+   { return {
+   node: "ExprNe", expr1: expr1, expr2: expr2,
+    serialize: function(ident) {
+                 var newIdent = ident + "  ";
+                  return ident + "(" + this.node + "\n"
+                    + this.expr1.serialize(newIdent)
+                    + this.expr2.serialize(newIdent)
+                    + ident + ")\n";
+               }};
+   }
  / ExpresionAditiva
 
 ExpresionAditiva = expr:ExpresionMultiplicativa
@@ -118,6 +310,13 @@ ExpresionAditiva = expr:ExpresionMultiplicativa
            node: curr[1] == "+" ? "ExprAdd" : "ExprSub",
            expr1: acc,
            expr2: curr[3],
+           serialize: function(ident) {
+            var newIdent = ident + "  ";
+             return ident + "(" + this.node + "\n"
+               + this.expr1.serialize(newIdent)
+               + this.expr2.serialize(newIdent)
+               + ident + ")\n";
+          }
          }
        }, expr);
      } else {
@@ -132,6 +331,13 @@ ExpresionMultiplicativa = expr:ExpresionAtomica rest:(_ TIMES _ ExpresionAtomica
            node: "ExprMul",
            expr1: acc,
            expr2: curr[3],
+           serialize: function(ident) {
+            var newIdent = ident + "  ";
+             return ident + "(" + this.node + "\n"
+               + this.expr1.serialize(newIdent)
+               + this.expr2.serialize(newIdent)
+               + ident + ")\n";
+          }
          }
        }, expr);
      } else {
@@ -141,23 +347,100 @@ ExpresionMultiplicativa = expr:ExpresionAtomica rest:(_ TIMES _ ExpresionAtomica
 
 ExpresionAtomica =
    LBRACK exprs:ListaDeExpresiones RBRACK
-   { return { node: "ExprVecMake", exprs:exprs }; }
+   { return {
+       node: "ExprVecMake", exprs:exprs,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var params = this.exprs.map(function(p) { return p.serialize(newIdent); }).join('');
+          return ident + "("
+            + this.node + "\n"
+            + params
+            + ident + ")\n";
+       }
+     };
+   }
  / HASH id:ID
-   { return { node: "ExprVecLength", id: id }; }
+   { return {
+      node: "ExprVecLength", id: id,
+      serialize: function(ident) {
+        var newIdent = ident + "  ";
+        return ident + "(" + this.node + "\n" + newIdent
+         + this.id + "\n" + ident + ")\n";
+      }
+    };
+   }
  / id:ID LPAREN exprList:ListaDeExpresiones RPAREN
-   { return { node: "ExprCall", id: id, exprList: exprList }; }
+    { return {
+       node: "ExprCall", id: id, exprList: exprList,
+       serialize: function(ident) {
+         var newIdent = ident + "  ";
+         var params = this.exprList.map(function(p) { return p.serialize(newIdent); }).join('');
+           return ident + "("
+             + this.node + "\n" + newIdent
+             + this.id + "\n"
+             + params
+             + ident + ")\n";
+       }
+     };
+    }
  / id:ID LBRACK expr:Expresion RBRACK
-   { return { node: "ExprVecDeref", id: id, expr: expr }; }
+   { return {
+      node: "ExprVecDeref", id: id, expr: expr,
+      serialize: function(ident) {
+        var newIdent = ident + "  ";
+        return ident + "(" + this.node + "\n" + newIdent
+                       + this.id + "\n"
+                       + this.expr.serialize(newIdent)
+                       + ident + ")\n";
+      }
+    };
+   }
  / LPAREN expr:Expresion RPAREN
    { return expr; }
  / NUM
-   { return { node: "ExprConstNum", value: parseInt(text()) }; }
+   { return {
+     node: "ExprConstNum", value: text(),
+     serialize: function(ident) {
+       var newIdent = ident + "  ";
+       return ident + "(" + this.node + "\n" + newIdent
+       + this.value + "\n"
+       + ident + ")\n";
+     }
+   };
+  }
  / TRUE
-   { return { node: "ExprConstBool", value: true }; }
+   { return {
+     node: "ExprConstBool", value: "True",
+     serialize: function(ident) {
+       var newIdent = ident + "  ";
+       return ident + "(" + this.node + "\n" + newIdent
+              + this.value + "\n"
+              + ident + ")\n";
+     }
+   };
+  }
  / FALSE
-   { return { node: "ExprConstBool", value: false }; }
+   { return {
+     node: "ExprConstBool", value: "False",
+     serialize: function(ident) {
+       var newIdent = ident + "  ";
+       return ident + "(" + this.node + "\n" + newIdent
+              + this.value + "\n"
+              + ident + ")\n";
+     }
+   };
+  }
  / ID
-   { return { node: "ExprVar", value: text() }; }
+   { return {
+     node: "ExprVar", value: text(),
+     serialize: function(ident) {
+       var newIdent = ident + "  ";
+       return ident + "("
+         + this.node + "\n" + newIdent
+         + this.value + "\n" + ident + ")\n";
+     }
+   };
+  }
 
 ID = [a-zA-Z][a-zA-Z0-9]* { return text(); }
 NUM = [0-9]+
