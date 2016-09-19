@@ -1,5 +1,6 @@
 var peg = require('pegjs');
 var fs = require('fs');
+var serializer = require('./src/serializer');
 
 const ejemplos = [
     // ejemplos bien formados
@@ -32,7 +33,7 @@ fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {
             fs.readFile(rutaTestExpected, 'utf8', function (err, contenidoTestExpected) {
                 if (err) { return console.log('No se pudo cargar el resultado: ' + err); }
 
-                var resultado = ast.serialize();
+                var resultado = serializer.serialize(ast);
                 if (contenidoTestExpected === resultado) {
                     console.log(':-) Serialización del ejemplo ' + ejemplo + ' correcta.');
                 } else {
