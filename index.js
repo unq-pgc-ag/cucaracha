@@ -24,6 +24,7 @@ const ejemplos = [
   '15', // main() de tipo distinto de Unit
   '16', // putChar() no se puede redefinir
   '17', // variable no definida previamente
+  '18', // reasignacion de variable con tipos diferentes
 ];
 
 fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {

@@ -1,0 +1,20 @@
+(Program
+  (Function
+    main
+    Unit
+    (Block
+      (StmtAssign
+        x
+        (ExprConstNum
+          1
+        )
+      )
+      (StmtAssign
+        x
+        (ExprConstBool
+          False
+        )
+      )
+    )
+  )
+)

@@ -62,9 +62,11 @@ TypeCheckFunctions = {
   },
 
   "StmtAssign" : function(ast, context) {
-    // TODO en caso de que la variable ya este definida, verificar que el tipo coincida con la nueva
-    context[ast.id] = determineTypeOf(ast.expr);
-    return true;
+    if (context[ast.id] && context[ast.id] != determineTypeOf(ast.expr, context)) {
+      return false; // variable ya asignada a expresion de otro tipo
+    }
+    context[ast.id] = determineTypeOf(ast.expr, context);
+    return validate(ast.expr, context);
   },
 
   "StmtVecAssign" : function(ast, context) {
