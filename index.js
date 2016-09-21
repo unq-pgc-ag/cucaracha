@@ -4,15 +4,26 @@ var serializer = require('./src/serializer');
 var type_checker = require('./src/type_checker');
 
 const ejemplos = [
-    // ejemplos bien formados
-    '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
-    // ejemplos con errores de tipo
-    '11', // tipo de retorno Vec
-    '12', // funciones repetidas
-    '13', // dos veces main()
-    '14', // sin main()
-    '15', // main() de tipo distinto de Unit
-    '16' // putChar() no se puede redefinir
+  // ejemplos bien formados
+  '00',
+  '01',
+  '02',
+  '03',
+  '04',
+  '05',
+  '06',
+  '07',
+  '08',
+  '09',
+  '10',
+  // ejemplos con errores de tipo
+  '11', // tipo de retorno Vec
+  '12', // funciones repetidas
+  '13', // dos veces main()
+  '14', // sin main()
+  '15', // main() de tipo distinto de Unit
+  '16', // putChar() no se puede redefinir
+  '17', // variable no definida previamente
 ];
 
 fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {

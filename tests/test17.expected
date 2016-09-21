@@ -1,0 +1,14 @@
+(Program
+  (Function
+    main
+    Unit
+    (Block
+      (StmtCall
+        putChar
+        (ExprVar
+          x
+        )
+      )
+    )
+  )
+)
