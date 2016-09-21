@@ -1,31 +1,21 @@
 # Cucaracha
 
-## Herramienta generadora de parsers
-
-TODO
-
-### Cambio en las reglas originales
-
-TODO
-
-#### Recursión a izquierda
-
-TODO
-
-#### Orden de las reglas
-
-TODO
-
-## AST
-
-TODO
-
-### Como estan representados los nodos
-
-Números enteros: { node: 'Nombre', value: zzz }
-
-TODO
-
 ## Cómo ejecutarlo
 
-TODO
+### Prerequisitos
+
+* Node.JS versión 6.5.0
+* NPM versión 2.10.1
+* Ejecutar `npm install` en la carpeta principal. Esto descargará `pegjs`, la herramienta que usamos para generar el parser.
+
+### Ejecución
+
+El archivo `index.js` contiene un script de prueba que, para todos los ejemplos, hace lo siguiente:
+
+* parsea para generar el AST
+* serializa el AST y lo compara con el _expected_.
+* realiza el chequeo estático
+
+Tenemos los ejemplos provistos más otros agregados por nosotros que demuestran errores de tipado/chequeo estático.
+
+Para ejecutar este test, sólo hace falta correr `npm start` desde la consola.
