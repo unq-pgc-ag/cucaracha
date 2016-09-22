@@ -1,7 +1,7 @@
 var peg = require('pegjs');
 var fs = require('fs');
-var serializer = require('./src/serializer');
-var type_checker = require('./src/type_checker');
+var serializer = require('./lib/serializer');
+var type_checker = require('./lib/type_checker');
 
 const ejemplos = [
   // ejemplos bien formados
@@ -27,14 +27,16 @@ const ejemplos = [
   '18', // reasignacion de variable con tipos diferentes
 ];
 
-fs.readFile('sintaxis', 'utf8', function (err, contenidoGramatica) {
+var rutaBase = 'spec/examples';
+
+fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
     if (err) { return console.log('No se puede leer la sintaxis: ' + err); }
     var parser = peg.generate(contenidoGramatica);
     console.log('Gramatica generada correctamente!');
 
     ejemplos.forEach(function (ejemplo) {
-        var rutaTestInput = 'tests/test' + ejemplo + '.input';
-        var rutaTestExpected = 'tests/test' + ejemplo + '.expected';
+        var rutaTestInput = rutaBase + '/test' + ejemplo + '.input';
+        var rutaTestExpected = rutaBase + '/test' + ejemplo + '.expected';
         fs.readFile(rutaTestInput, 'utf8', function (err, contenidoTestInput) {
             if (err) { return console.log('No se pudo cargar el ejemplo: ' + err); }
 
