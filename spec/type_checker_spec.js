@@ -33,8 +33,66 @@ describe('Cucaracha - Chequeo estático', function () {
     });
   });
 
+  describe('llamado a función', function () {
+    var miFuncion = { node: 'ExprCall', id: 'miFuncion', exprList: [elTrue, elOcho] };
+
+    it('no es válido cuando la función no existe', function () {
+      var context = { locals: {}, functions: {} };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('no es válido cuando la función existe, pero devuelve Unit', function () {
+      var miFuncionDef = { node: 'Function', tipo: 'Unit', params: [{ node: 'Parameter', id: 'n', type: 'Int' }] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('no es válido cuando la función existe, pero alguna de sus expresiones está mal formada', function () {
+      var miFuncion = { node: 'ExprCall', id: 'miFuncion', exprList: [elTrue, expresionInvalida] };
+      var miFuncionDef = { node: 'Function', tipo: 'Int', params: [{ node: 'Parameter', id: 'n', type: 'Int' }] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('no es válido cuando la función existe, pero alguno de sus parámetros no coincide', function () {
+      var miFuncionDef = { node: 'Function', tipo: 'Int', params: [
+        { node: 'Parameter', id: 'b1', type: 'Bool' },
+        { node: 'Parameter', id: 'b2', type: 'Bool' }
+      ] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('no es válido cuando la cantidad de parámetros pasada es menor', function () {
+      var miFuncionDef = { node: 'Function', tipo: 'Int', params: [
+        { node: 'Parameter', id: 'b1', type: 'Bool' },
+        { node: 'Parameter', id: 'b2', type: 'Bool' }
+      ] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      var miFuncion = { node: 'ExprCall', id: 'miFuncion', exprList: [elTrue] };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('no es válido cuando la cantidad de parámetros pasada es mayor', function () {
+      var miFuncionDef = { node: 'Function', tipo: 'Int', params: [
+        { node: 'Parameter', id: 'b1', type: 'Bool' }
+      ] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    it('es válido cuando se cumplen todas las condiciones anteriores', function () {
+      var miFuncionDef = { node: 'Function', tipo: 'Int', params: [
+        { node: 'Parameter', id: 'n', type: 'Bool' },
+        { node: 'Parameter', id: 'n', type: 'Int' }
+      ] };
+      var context = { locals: {}, functions: { miFuncion: miFuncionDef } };
+      expect(chequear(miFuncion, context)).toBe(true);
+    });
+  });
+
   describe('Function', function () {
-    it('no es valida cuando el tipo de retorno es Vec', function () {
+    it('no es válida cuando el tipo de retorno es Vec', function () {
       var ast = { node: 'Function', tipo: 'Vec', params: [], block: emptyBlock };
       expect(chequear(ast)).toBe(false);
     });
@@ -79,18 +137,50 @@ describe('Cucaracha - Chequeo estático', function () {
   describe('llamado a procedimiento', function () {
     var miFuncion = { node: 'StmtCall', id: 'miFuncion', expressions: [] };
 
-    it('es valido cuando la funcion existe, y retorna Unit', function () {
+    it('es válido cuando la función existe, y retorna Unit', function () {
       var context = { locals: {}, functions: { 'miFuncion' : { node: 'Function', tipo: 'Unit' } }};
       expect(chequear(miFuncion, context)).toBe(true);
     });
 
-    it('no es valido cuando la funcion no existe', function () {
+    it('no es válido cuando la función no existe', function () {
       expect(chequear(miFuncion)).toBe(false);
     });
 
-    it('no es valido cuando la funcion existe pero no devuelve Unit', function () {
+    it('no es válido cuando la función existe pero no devuelve Unit', function () {
       var context = { locals: {}, functions: { 'miFuncion' : { node: 'Function', tipo: 'Bool' } }};
       expect(chequear(miFuncion, context)).toBe(false);
+    });
+
+    describe('funciones predefinidas', function () {
+      describe('putChar()', function () {
+        var putCharDef = { node: 'Function', tipo: 'Unit', params: [{ node: 'Parameter', id: 'n', type: 'Int' }] };
+        var context = { locals: '', functions: { putChar: putCharDef } };
+
+        xit('no es válida cuando el parámetro no es Int', function () {
+          var ast = { node: 'StmtCall', id: 'putChar', expressions: [elTrue] };
+          expect(chequear(ast, context)).toBe(false);
+        });
+
+        it('es válida cuando el parámetro es Int', function () {
+          var ast = { node: 'StmtCall', id: 'putChar', expressions: [elOcho] };
+          expect(chequear(ast, context)).toBe(true);
+        });
+      });
+
+      describe('putNum()', function () {
+        var putNumDef = { node: 'Function', tipo: 'Unit', params: [{ node: 'Parameter', id: 'n', type: 'Int' }] };
+        var context = { locals: '', functions: { putNum: putNumDef } };
+
+        xit('no es válida cuando el parámetro no es Int', function () {
+          var ast = { node: 'StmtCall', id: 'putNum', expressions: [elTrue] };
+          expect(chequear(ast, context)).toBe(false);
+        });
+
+        it('es válida cuando el parámetro es Int', function () {
+          var ast = { node: 'StmtCall', id: 'putNum', expressions: [elOcho] };
+          expect(chequear(ast, context)).toBe(true);
+        });
+      });
     });
   });
 

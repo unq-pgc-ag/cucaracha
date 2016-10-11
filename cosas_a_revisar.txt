@@ -1,0 +1,132 @@
+-- El main no puede tomar parámetros:
+
+fun main(x : Int) {}
+
+-- putChar recibe un número:
+
+fun main() { putChar(True) }
+
+-- putNum recibe un número:
+
+fun main() { putNum([]) }
+
+-- Los vectores sólo pueden contener números:
+
+fun main() {
+        x := [True]
+}
+
+-- x no es un vector:
+
+fun main() {
+  x := True
+  putChar(#x)
+}
+
+-- #x no es un booleano:
+
+fun main() {
+  x := []
+  if (#x) {}
+}
+
+-- x no es un vector:
+
+fun main() {
+  x := True
+  putChar(x[1])
+}
+
+-- El índice de un vector debe ser un número:
+
+fun main() {
+  x := []
+  putChar(x[True])
+}
+
+-- x[1] no es un booleano:
+
+fun main() {
+  x := []
+  if (x[1]) {}
+}
+
+-- x no es un vector:
+
+fun main() {
+  x := True
+  x[1] := 1
+}
+
+-- True no es un índice válido:
+
+fun main() {
+  x := []
+  x[True] := 1
+}
+
+-- No se puede guardar un booleano como contenido de un vector.
+
+fun main() {
+  x := []
+  x[1] := True
+}
+
+-- La función f devuelve Unit, no se puede asignar a una variable:
+
+fun f() {}
+
+fun main() {
+  x := f()
+}
+
+-- La función f devuelve un Int, no puede estar en la condición de un if:
+
+fun f() : Int {}
+
+fun main() {
+  if f() {}
+}
+
+-- La función f devuelve Int, no se puede usar como comando/procedimiento:
+
+fun f() : Int { return 1 }
+
+fun main() {
+  f()
+}
+
+-- La función f recibe un Bool, no se le puede pasar un número:
+
+fun f(x : Bool) {}
+
+fun main() {
+  f(1)
+}
+
+-- El and opera entre booleanos:
+
+fun main() {
+  x := True and []
+}
+
+-- El + opera entre números:
+
+fun main() {
+  x := 1 + (True and True)
+}
+
+-- Debe haber un único return, al final del cuerpo de la función:
+
+fun f() : Int {
+        return 1
+        return 1
+}
+fun main() {}
+
+-- La función f no tiene return:
+
+fun f() : Int {}
+fun main() {}
+
+== parametros no tengan el mismo nombre?
