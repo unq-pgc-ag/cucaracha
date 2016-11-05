@@ -1,7 +1,3 @@
--- El main no puede tomar parámetros:
-
-fun main(x : Int) {}
-
 -- putChar recibe un número:
 
 fun main() { putChar(True) }
@@ -10,66 +6,11 @@ fun main() { putChar(True) }
 
 fun main() { putNum([]) }
 
--- Los vectores sólo pueden contener números:
-
-fun main() {
-        x := [True]
-}
-
--- x no es un vector:
-
-fun main() {
-  x := True
-  putChar(#x)
-}
-
--- #x no es un booleano:
-
-fun main() {
-  x := []
-  if (#x) {}
-}
-
--- x no es un vector:
-
-fun main() {
-  x := True
-  putChar(x[1])
-}
-
--- El índice de un vector debe ser un número:
-
-fun main() {
-  x := []
-  putChar(x[True])
-}
-
 -- x[1] no es un booleano:
 
 fun main() {
   x := []
   if (x[1]) {}
-}
-
--- x no es un vector:
-
-fun main() {
-  x := True
-  x[1] := 1
-}
-
--- True no es un índice válido:
-
-fun main() {
-  x := []
-  x[True] := 1
-}
-
--- No se puede guardar un booleano como contenido de un vector.
-
-fun main() {
-  x := []
-  x[1] := True
 }
 
 -- La función f devuelve Unit, no se puede asignar a una variable:
@@ -102,12 +43,6 @@ fun f(x : Bool) {}
 
 fun main() {
   f(1)
-}
-
--- El and opera entre booleanos:
-
-fun main() {
-  x := True and []
 }
 
 -- El + opera entre números:
