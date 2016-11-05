@@ -10,6 +10,12 @@
 
 ### Ejecución
 
+#### Tests de unidad
+
+Instalar `jasmine` de manera global (`npm install -g jasmine`). Luego, ejecutar `jasmine` en la raíz del proyecto.
+
+#### Script
+
 El archivo `index.js` contiene un script de prueba que, para todos los ejemplos, hace lo siguiente:
 
 * parsea para generar el AST
