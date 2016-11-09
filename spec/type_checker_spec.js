@@ -1,20 +1,21 @@
-var TypeChecker = require('../lib/type_checker');
+var typeChecker = require('../lib/type_checker');
+var astBuilder = require('../lib/ast_builder');
 
 describe('Cucaracha - Chequeo estático', function () {
-  function chequear(ast, context) { return TypeChecker.validate(ast, context); }
+  function chequear(ast, context) { return typeChecker.validate(ast, context); }
 
   var operadoresBooleanos = ['ExprAnd', 'ExprOr', 'ExprNot', 'ExprLe', 'ExprGe', 'ExprLt', 'ExprGt', 'ExprEq', 'ExprNe'];
   var operadoresNumericos = ['ExprAdd', 'ExprSub', 'ExprMul', 'ExprLe', 'ExprGe', 'ExprLt', 'ExprGt', 'ExprEq', 'ExprNe'];
 
   var emptyBlock = { node: 'Block', instructions: [] };
-  var elTrue = { node: 'ExprConstBool', value: 'True' };
-  var elFalse = { node: 'ExprConstBool', value: 'False' };
-  var elSiete = { node: 'ExprConstNum', value: '7' };
-  var elOcho = { node: 'ExprConstNum', value: '8' };
+  var elTrue = astBuilder.true();
+  var elFalse = astBuilder.false();
+  var elSiete = astBuilder.num(7);
+  var elOcho = astBuilder.num(8);
 
-  var expresionInvalida = { node: 'ExprAdd', expr1: elOcho, expr2: elTrue };
+  var expresionInvalida = astBuilder.add(elOcho, elTrue);
 
-  var intParam = { node: 'Parameter', id: 'n', type: 'Int' };
+  var intParam = astBuilder.param('Int', 'n');
 
   describe('Programa', function () {
     it('es correcto cuando hay una función main() de tipo Unit', function () {
@@ -304,7 +305,7 @@ describe('Cucaracha - Chequeo estático', function () {
   describe('determinar el tipo de expresiones', function () {
     operadoresBooleanos.forEach(function (op) {
       it('el tipo de un ' + op + ' es Bool', function () {
-        expect(TypeChecker.determineTypeOf({ node: op })).toBe('Bool');
+        expect(typeChecker.determineTypeOf({ node: op })).toBe('Bool');
       });
     });
 
@@ -313,11 +314,11 @@ describe('Cucaracha - Chequeo estático', function () {
 
       it('retorna el tipo de retorno de la función que ya está en la tabla de funciones', function () {
         var context = { locals: {}, functions: { 'miFuncion' : { node: 'Function', tipo: 'Bool' } } };
-        expect(TypeChecker.determineTypeOf(miFuncion, context)).toBe('Bool');
+        expect(typeChecker.determineTypeOf(miFuncion, context)).toBe('Bool');
       });
 
       it('retorna undefined si la función no está en la tabla de funciones', function () {
-        expect(TypeChecker.determineTypeOf(miFuncion, {})).toBe(undefined);
+        expect(typeChecker.determineTypeOf(miFuncion, {})).toBe(undefined);
       });
     })
   });
