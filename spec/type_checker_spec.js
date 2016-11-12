@@ -19,8 +19,7 @@ describe('Cucaracha - Chequeo estático', function () {
 
   describe('Programa', function () {
     it('es correcto cuando hay una función main() de tipo Unit', function () {
-      var main = { node: 'Function', id: 'main', tipo: 'Unit', params: [], block: emptyBlock };
-      var ast = { node: 'Program', functions: [main] };
+      var ast = astBuilder.emptyProgram();
       expect(chequear(ast)).toBe(true);
     });
 
@@ -167,12 +166,12 @@ describe('Cucaracha - Chequeo estático', function () {
         var context = { locals: '', functions: { putChar: putCharDef } };
 
         xit('no es válida cuando el parámetro no es Int', function () {
-          var ast = { node: 'StmtCall', id: 'putChar', expressions: [elTrue] };
+          var ast = astBuilder.putChar(elTrue);
           expect(chequear(ast, context)).toBe(false);
         });
 
         it('es válida cuando el parámetro es Int', function () {
-          var ast = { node: 'StmtCall', id: 'putChar', expressions: [elOcho] };
+          var ast = astBuilder.putChar(elOcho);
           expect(chequear(ast, context)).toBe(true);
         });
       });
