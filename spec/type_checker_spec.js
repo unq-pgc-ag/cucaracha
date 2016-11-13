@@ -181,12 +181,12 @@ describe('Cucaracha - Chequeo estático', function () {
         var context = { locals: '', functions: { putNum: putNumDef } };
 
         xit('no es válida cuando el parámetro no es Int', function () {
-          var ast = { node: 'StmtCall', id: 'putNum', expressions: [elTrue] };
+          var ast = astBuilder.putNum(elTrue);
           expect(chequear(ast, context)).toBe(false);
         });
 
         it('es válida cuando el parámetro es Int', function () {
-          var ast = { node: 'StmtCall', id: 'putNum', expressions: [elOcho] };
+          var ast = astBuilder.putNum(elOcho);
           expect(chequear(ast, context)).toBe(true);
         });
       });
