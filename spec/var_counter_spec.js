@@ -16,7 +16,13 @@ describe('Cucaracha - contador de variables', function () {
     expect(resultado).toEqual(1);
   });
 
-  xit('cuenta un bloque con muchas asignaciones de variables', function () {
+  it('cuenta un bloque con muchas asignaciones de variables', function () {
+    var ast = astBuilder.block([
+      astBuilder.assign('x', astBuilder.num('42')),
+      astBuilder.assign('y', astBuilder.true()),
+    ]);
+    var resultado = varCounter.count(ast);
 
+    expect(resultado).toEqual(2);
   });
 });
