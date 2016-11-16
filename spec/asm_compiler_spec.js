@@ -93,8 +93,24 @@ describe('Cucaracha - Compilador Assembler', function () {
       ]);
     });
 
-    xit('con x cantidad de variables locales, actualiza rsp con esa cantidad', function () {
+    it('con x cantidad de variables locales, actualiza rsp con esa cantidad', function () {
+      var block = astBuilder.block([
+        astBuilder.assign('x', astBuilder.num('42')),
+        astBuilder.assign('y', astBuilder.true()),
+      ]);
+      var ast = astBuilder.unitFunction('miFuncion', [], block);
+      var resultado = compiler.compile(ast);
 
+      expect(resultado).toEqual([
+        asmBuilder.subroutine('cuca_miFuncion', [
+          asmBuilder.push('rbp'),
+          asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.sub('rsp', '16'), // 2 variables locales * 8 que es el espacio que ocupa cada una
+          asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.pop('rbp'),
+          asmBuilder.ret(),
+        ])
+      ]);
     });
   });
 });
