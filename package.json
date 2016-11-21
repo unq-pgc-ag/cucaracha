@@ -24,6 +24,7 @@
     "pegjs": "^0.10.0"
   },
   "devDependencies": {
-    "jasmine": "^2.5.2"
+    "jasmine": "^2.5.2",
+    "jasmine-collection-matchers": "^0.2.0"
   }
 }
