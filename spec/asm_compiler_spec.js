@@ -39,7 +39,7 @@ describe('Cucaracha - Compilador Assembler', function () {
         asmBuilder.database('lli_format_string', '"%lli"'),
         asmBuilder.section('.text'),
         asmBuilder.global('main'),
-        asmBuilder.extern(['exit', 'putchar']),
+        asmBuilder.extern(['exit', 'putchar', 'printf']),
         asmBuilder.subroutine('cuca_main', [
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
@@ -130,7 +130,7 @@ describe('Cucaracha - Compilador Assembler', function () {
         asmBuilder.database('lli_format_string', '"%lli"'),
         asmBuilder.section('.text'),
         asmBuilder.global('main'),
-        asmBuilder.extern(['exit', 'putchar']),
+        asmBuilder.extern(['exit', 'putchar', 'printf']),
         // TODO preguntar: hace falta que estén ordenadas las definiciones de funciones de manera que el main quede al final?
         asmBuilder.subroutine('cuca_main', [
           asmBuilder.push('rbp'),
