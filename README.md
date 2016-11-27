@@ -12,11 +12,13 @@
 
 #### Tests de unidad
 
-Instalar `jasmine` de manera global (`npm install -g jasmine`). Luego, ejecutar `jasmine` en la raíz del proyecto.
+Instalar `jasmine` de manera global (`npm install -g jasmine`). Luego, ejecutar `jasmine` en la raíz del proyecto. O también se puede ejecutar `npm test`.
 
-#### Script
+#### Scripts
 
-El archivo `index.js` contiene un script de prueba que, para todos los ejemplos, hace lo siguiente:
+##### Para parseo
+
+El archivo `parser-test.js` contiene un script de prueba que, para todos los ejemplos, hace lo siguiente:
 
 * parsea para generar el AST
 * serializa el AST y lo compara con el _expected_.
@@ -24,4 +26,15 @@ El archivo `index.js` contiene un script de prueba que, para todos los ejemplos,
 
 Tenemos los ejemplos provistos más otros agregados por nosotros que demuestran errores de tipado/chequeo estático.
 
-Para ejecutar este test, sólo hace falta correr `npm start` desde la consola.
+Para ejecutar este test, sólo hace falta correr `npm run parser-test` desde la consola.
+
+##### Para compilación
+
+El archivo `compiler-test.js` contiene un script de prueba que, para algunos de los ejemplos, hace lo siguiente:
+
+* parsea para generar el AST
+* serializa el AST
+* realiza el chequeo estático
+* compila y genera el archivo de salida
+
+Para ejecutar este test, sólo hace falta correr `npm run compiler-test` desde la consola. En la carpeta `spec/examples/compiler/build` se ubicará cada uno de los ejemplos compilados.
