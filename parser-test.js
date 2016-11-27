@@ -27,7 +27,7 @@ const ejemplos = [
   '18', // reasignacion de variable con tipos diferentes
 ];
 
-var rutaBase = 'spec/examples';
+var rutaBase = 'spec/examples/parser';
 
 fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
     if (err) { return console.log('No se puede leer la sintaxis: ' + err); }

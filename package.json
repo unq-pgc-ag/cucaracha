@@ -7,8 +7,9 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "parser-test": "node parser-test.js",
+    "compiler-test": "node compiler-test.js",
+    "test": "jasmine"
   },
   "repository": {
     "type": "git",
