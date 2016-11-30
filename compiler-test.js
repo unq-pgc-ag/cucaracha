@@ -14,6 +14,8 @@ const ejemplos = [
   '04',
   '05',
   '06',
+  '07',
+  '08',
   // TODO agregar mas a medida que van pasando
 ];
 
@@ -46,7 +48,12 @@ fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
 
             // para ver el código intermedio
             //console.log(JSON.stringify(instrucciones, null, 2));
+
             var codigoCompilado = compiler.generateOutput(instrucciones);
+
+            // para ver el código compilado
+            // console.log('Ejemplo #' + ejemplo +  ': código compilado: ');
+            // console.log(codigoCompilado);
 
             var prefijo = rutaBase + '/build/test' + ejemplo;
             var rutaDestino = prefijo + '.asm';
