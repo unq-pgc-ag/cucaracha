@@ -8,10 +8,10 @@ describe('Cucaracha - Compilador Assembler', function () {
 
   describe('Constantes numéricas / booleanas', function () {
     it('compila un número como un mov', function () {
-      var ast = astBuilder.num(8);
+      var ast = astBuilder.num('16');
       var resultado = compiler.compile(ast);
 
-      expect(resultado).toHaveSameItems([asmBuilder.mov('rdi', '8')]);
+      expect(resultado).toHaveSameItems([asmBuilder.mov('rdi', '16')]);
     });
 
     it('compila un true como un mov con valor -1', function () {
@@ -131,7 +131,6 @@ describe('Cucaracha - Compilador Assembler', function () {
         asmBuilder.section('.text'),
         asmBuilder.global('main'),
         asmBuilder.extern(['exit', 'putchar', 'printf']),
-        // TODO preguntar: hace falta que estén ordenadas las definiciones de funciones de manera que el main quede al final?
         asmBuilder.subroutine('cuca_main', [
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
@@ -153,6 +152,46 @@ describe('Cucaracha - Compilador Assembler', function () {
       ]);
     });
 
-    xit('compila un llamado a una función con parámetros');
+    it('compila un llamado a una función con parámetros', function () {
+      var miFuncionParams = [astBuilder.param('Int', 'x')];
+      var varX = astBuilder.var('x');
+      var miFuncionBlock = astBuilder.block([astBuilder.putChar(varX)]);
+      var miFuncion = astBuilder.unitFunction('miFuncion', miFuncionParams, miFuncionBlock);
+      var mainBlock = astBuilder.block([astBuilder.funcCall('miFuncion', [astBuilder.num('65')])]);
+      var ast = astBuilder.programWith(miFuncion, mainBlock);
+      var resultado = compiler.compile(ast);
+
+      expect(resultado).toHaveSameItems([
+        asmBuilder.section('.data'),
+        asmBuilder.database('lli_format_string', '"%lli"'),
+        asmBuilder.section('.text'),
+        asmBuilder.global('main'),
+        asmBuilder.extern(['exit', 'putchar', 'printf']),
+        asmBuilder.subroutine('cuca_main', [
+          asmBuilder.push('rbp'),
+          asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.sub('rsp', '8'), // guardo lugar para 1 parámetro
+          asmBuilder.mov('rdi', '65'),
+          asmBuilder.mov('[rsp + 0]', 'rdi'),
+          asmBuilder.call('cuca_miFuncion'),
+          asmBuilder.add('rsp', '8'), // libero el lugar
+          asmBuilder.pop('rbp'),
+          asmBuilder.ret(),
+        ]),
+        asmBuilder.subroutine('cuca_miFuncion', [
+          asmBuilder.push('rbp'),
+          asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.mov('rdi', '[rbp + 16]'),
+          asmBuilder.call('putchar'),
+          asmBuilder.pop('rbp'),
+          asmBuilder.ret(),
+        ]),
+        asmBuilder.subroutine('main', [
+          asmBuilder.call('cuca_main'),
+          asmBuilder.mov('rdi', '0'),
+          asmBuilder.call('exit'),
+        ]),
+      ]);
+    });
   });
 });
