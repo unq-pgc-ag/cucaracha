@@ -16,6 +16,10 @@ const ejemplos = [
   '06',
   '07',
   '08',
+  '09',
+  '10',
+  '11',
+  '12',
   // TODO agregar mas a medida que van pasando
 ];
 

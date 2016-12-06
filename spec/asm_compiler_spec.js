@@ -43,6 +43,7 @@ describe('Cucaracha - Compilador Assembler', function () {
         asmBuilder.subroutine('cuca_main', [
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ]),
@@ -91,6 +92,7 @@ describe('Cucaracha - Compilador Assembler', function () {
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
           // cuerpo de la función
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ])
@@ -105,15 +107,29 @@ describe('Cucaracha - Compilador Assembler', function () {
       var ast = astBuilder.unitFunction('miFuncion', [], block);
       var resultado = compiler.compile(ast);
 
+      var prefix = [
+        asmBuilder.push('rbp'),
+        asmBuilder.mov('rbp', 'rsp'),
+        asmBuilder.sub('rsp', '16'), // 2 variables locales * 8 que es el espacio que ocupa cada una
+      ]
+      var compiledBlock = [
+        // asignación de x
+        asmBuilder.mov('rdi', '42'),
+        asmBuilder.mov('[rbp - 8]', 'rdi'),
+        // asignación de y
+        asmBuilder.mov('rdi', '-1'),
+        asmBuilder.mov('[rbp - 16]', 'rdi'),
+      ]
+      var suffix = [
+        asmBuilder.mov('rsp', 'rbp'),
+        asmBuilder.pop('rbp'),
+        asmBuilder.ret(),
+      ]
       expect(resultado).toHaveSameItems([
-        asmBuilder.subroutine('cuca_miFuncion', [
-          asmBuilder.push('rbp'),
-          asmBuilder.mov('rbp', 'rsp'),
-          asmBuilder.sub('rsp', '16'), // 2 variables locales * 8 que es el espacio que ocupa cada una
-          asmBuilder.mov('rbp', 'rsp'),
-          asmBuilder.pop('rbp'),
-          asmBuilder.ret(),
-        ])
+        asmBuilder.subroutine(
+          'cuca_miFuncion',
+          prefix.concat(compiledBlock).concat(suffix)
+        ),
       ]);
     });
   });
@@ -135,12 +151,14 @@ describe('Cucaracha - Compilador Assembler', function () {
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
           asmBuilder.call('cuca_miFuncion'),
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ]),
         asmBuilder.subroutine('cuca_miFuncion', [
           asmBuilder.push('rbp'),
           asmBuilder.mov('rbp', 'rsp'),
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ]),
@@ -175,6 +193,7 @@ describe('Cucaracha - Compilador Assembler', function () {
           asmBuilder.mov('[rsp + 0]', 'rdi'),
           asmBuilder.call('cuca_miFuncion'),
           asmBuilder.add('rsp', '8'), // libero el lugar
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ]),
@@ -183,6 +202,7 @@ describe('Cucaracha - Compilador Assembler', function () {
           asmBuilder.mov('rbp', 'rsp'),
           asmBuilder.mov('rdi', '[rbp + 16]'),
           asmBuilder.call('putchar'),
+          asmBuilder.mov('rsp', 'rbp'),
           asmBuilder.pop('rbp'),
           asmBuilder.ret(),
         ]),
@@ -191,6 +211,19 @@ describe('Cucaracha - Compilador Assembler', function () {
           asmBuilder.mov('rdi', '0'),
           asmBuilder.call('exit'),
         ]),
+      ]);
+    });
+  });
+
+  describe('Asignaciones', function () {
+    it('compila una asignación compilando primero la expresión y después haciendo un mov a la posición de memoria asignada', function () {
+      var context = { localVarNames: ['x'] };
+      var ast = astBuilder.assign('x', astBuilder.num('66'));
+      var resultado = compiler.compile(ast, context);
+
+      expect(resultado).toHaveSameItems([
+        asmBuilder.mov('rdi', '66'),
+        asmBuilder.mov('[rbp - 8]', 'rdi'),
       ]);
     });
   });
