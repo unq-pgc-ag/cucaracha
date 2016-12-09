@@ -7,19 +7,8 @@ var type_checker = require('./lib/type_checker');
 var compiler = require('./lib/asm_compiler');
 
 const ejemplos = [
-  '00',
-  '01',
-  '02',
-  '03',
-  '04',
-  '05',
-  '06',
-  '07',
-  '08',
-  '09',
-  '10',
-  '11',
-  '12',
+  '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
+  '11', '12', '13', '14',
   // TODO agregar mas a medida que van pasando
 ];
 
