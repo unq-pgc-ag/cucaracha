@@ -9,8 +9,8 @@ var compiler = require('./lib/asm_compiler');
 const ejemplos = [
   '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
   '11', '12', '13', '14', '15', '16', '17', '19', '20',
-  '22', '23', '24', '25', '26'
-  // '27',
+  '22', '23', '24', '25', '26', '27', '28', '29', '30',
+  '31', '32', '33', '34', '35', '36', '37'
   // TODO agregar mas a medida que van pasando
 ];
 
@@ -47,8 +47,8 @@ fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
             var codigoCompilado = compiler.generateOutput(instrucciones);
 
             // para ver el código compilado
-            console.log('Ejemplo #' + ejemplo +  ': código compilado: ');
-            console.log(codigoCompilado);
+            // console.log('Ejemplo #' + ejemplo +  ': código compilado: ');
+            // console.log(codigoCompilado);
 
             var prefijo = rutaBase + '/build/test' + ejemplo;
             var rutaDestino = prefijo + '.asm';
