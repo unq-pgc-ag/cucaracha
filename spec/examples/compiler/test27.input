@@ -35,7 +35,14 @@ fun enter() {
 
 fun fila(x : Bool, y : Bool, z : Bool) {
     r := x and y and z
-    p(x) sep() p(y) sep() p(z) eq() p(r) enter()
+    p(x)
+    sep()
+    p(y)
+    sep()
+    p(z)
+    eq()
+    p(r)
+    enter()
 }
 
 fun main() {
