@@ -38,3 +38,5 @@ El archivo `compiler-test.js` contiene un script de prueba que, para algunos de 
 * compila y genera el archivo de salida
 
 Para ejecutar este test, sólo hace falta correr `npm run compiler-test` desde la consola. En la carpeta `spec/examples/compiler/build` se ubicará cada uno de los ejemplos compilados.
+
+Para ver sólo los resultados de cada prueba de manera ordenada, se puede hacer `npm run compiler-test | grep prueba | sort -k 2,2`.
