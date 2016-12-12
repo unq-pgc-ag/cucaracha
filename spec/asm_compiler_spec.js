@@ -217,7 +217,7 @@ describe('Cucaracha - Compilador Assembler', function () {
 
   describe('Asignaciones', function () {
     it('compila una asignación compilando primero la expresión y después haciendo un mov a la posición de memoria asignada', function () {
-      var context = { localVarNames: ['x'] };
+      var context = { localVarNames: ['x'], params: [], availableRegisters: ['rdi'] };
       var ast = astBuilder.assign('x', astBuilder.num('66'));
       var resultado = compiler.compile(ast, context);
 
