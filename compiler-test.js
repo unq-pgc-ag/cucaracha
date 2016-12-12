@@ -10,8 +10,9 @@ const ejemplos = [
   '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10',
   '11', '12', '13', '14', '15', '16', '17', '19', '20',
   '22', '23', '24', '25', '26', '27', '28', '29', '30',
-  '31', '32', '33', '34', '35', '36', '37'
+  '31', '32', '33', '34', '35', '36', '37', '38'
   // TODO agregar mas a medida que van pasando
+  // TODO exceden de registros: 18, 21, 39
 ];
 
 var rutaBase = 'spec/examples/compiler';
@@ -42,7 +43,7 @@ fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
             var instrucciones = compiler.compile(ast);
 
             // para ver el código intermedio
-            //console.log(JSON.stringify(instrucciones, null, 2));
+            // console.log(JSON.stringify(instrucciones, null, 2));
 
             var codigoCompilado = compiler.generateOutput(instrucciones);
 
