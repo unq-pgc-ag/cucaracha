@@ -7,6 +7,7 @@
 * Node.JS versión 12.16.3
 * NPM versión 6.14.7
 * Ejecutar `npm install` en la carpeta principal. Esto descargará `pegjs`, la herramienta que usamos para generar el parser.
+* Paquete `nasm` para la compilación. En pacman se puede instalar con `pacman -S nasm`.
 
 ### Ejecución
 
