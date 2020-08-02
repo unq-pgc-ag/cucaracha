@@ -1,5 +1,6 @@
 .idea/
 node_modules/
-spec/examples/compiler/build/*.asm
-spec/examples/compiler/build/*.o
+examples/compiler/build/*.asm
+examples/compiler/build/*.o
 npm-debug.log
+coverage/

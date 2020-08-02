@@ -9,7 +9,10 @@
   "scripts": {
     "parser-test": "node parser-test.js",
     "compiler-test": "node compiler-test.js",
-    "test": "jasmine"
+    "test": "npx testy",
+    "coverage": "npx nyc@latest --reporter=lcov --reporter=text-summary npm test",
+    "lint": "npx eslint@latest .",
+    "lint-fix": "npx eslint@latest --fix ."
   },
   "repository": {
     "type": "git",
@@ -25,7 +28,6 @@
     "pegjs": "^0.10.0"
   },
   "devDependencies": {
-    "jasmine": "^2.5.2",
-    "jasmine-collection-matchers": "^0.2.0"
+    "@pmoo/testy": "^5.0.1"
   }
 }

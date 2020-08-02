@@ -1,7 +1,7 @@
-var peg = require('pegjs');
-var fs = require('fs');
-var serializer = require('./lib/serializer');
-var type_checker = require('./lib/type_checker');
+const peg = require('pegjs');
+const fs = require('fs');
+const serializer = require('./lib/serializer');
+const type_checker = require('./lib/type_checker');
 
 const ejemplos = [
   // ejemplos bien formados
@@ -27,38 +27,38 @@ const ejemplos = [
   '18', // reasignacion de variable con tipos diferentes
 ];
 
-var rutaBase = 'spec/examples/parser';
+const rutaBase = 'examples/parser';
 
-fs.readFile('lib/sintaxis', 'utf8', function (err, contenidoGramatica) {
-    if (err) { return console.log('No se puede leer la sintaxis: ' + err); }
-    var parser = peg.generate(contenidoGramatica);
+fs.readFile('lib/sintaxis', 'utf8', function(err, contenidoGramatica) {
+    if (err) { return console.log(`No se puede leer la sintaxis: ${ err}`); }
+    const parser = peg.generate(contenidoGramatica);
     console.log('Gramatica generada correctamente!');
 
-    ejemplos.forEach(function (ejemplo) {
-        var rutaTestInput = rutaBase + '/test' + ejemplo + '.input';
-        var rutaTestExpected = rutaBase + '/test' + ejemplo + '.expected';
-        fs.readFile(rutaTestInput, 'utf8', function (err, contenidoTestInput) {
-            if (err) { return console.log('No se pudo cargar el ejemplo: ' + err); }
+    ejemplos.forEach(function(ejemplo) {
+        const rutaTestInput = `${rutaBase }/test${ ejemplo }.input`;
+        const rutaTestExpected = `${rutaBase }/test${ ejemplo }.expected`;
+        fs.readFile(rutaTestInput, 'utf8', function(err, contenidoTestInput) {
+            if (err) { return console.log(`No se pudo cargar el ejemplo: ${ err}`); }
 
-            var ast = parser.parse(contenidoTestInput);
+            const ast = parser.parse(contenidoTestInput);
             console.log('Parseado correctamente!');
             console.log('AST generado:');
             // console.log(JSON.stringify(ast, null, 2));
 
-            fs.readFile(rutaTestExpected, 'utf8', function (err, contenidoTestExpected) {
-                if (err) { return console.log('No se pudo cargar el resultado: ' + err); }
+            fs.readFile(rutaTestExpected, 'utf8', function(err, contenidoTestExpected) {
+                if (err) { return console.log(`No se pudo cargar el resultado: ${ err}`); }
 
-                var resultado = serializer.serialize(ast);
+                const resultado = serializer.serialize(ast);
                 if (contenidoTestExpected === resultado) {
-                    console.log(':-) Serialización del ejemplo ' + ejemplo + ' correcta.');
+                    console.log(`:-) Serialización del ejemplo ${ ejemplo } correcta.`);
                 } else {
-                    console.log(':-( Serialización del ejemplo ' + ejemplo + ' fallida.');
+                    console.log(`:-( Serialización del ejemplo ${ ejemplo } fallida.`);
                     console.log(resultado);
                 }
                 if (type_checker.validate(ast)) {
-                    console.log(':-) Ejemplo ' + ejemplo + ' sin errores de tipos.');
+                    console.log(`:-) Ejemplo ${ ejemplo } sin errores de tipos.`);
                 } else {
-                    console.log(':-( ERROR! Ejemplo ' + ejemplo + ' con errores de tipos.');
+                    console.log(`:-( ERROR! Ejemplo ${ ejemplo } con errores de tipos.`);
                 }
             });
         });
