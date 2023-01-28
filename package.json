@@ -28,6 +28,6 @@
     "pegjs": "^0.10.0"
   },
   "devDependencies": {
-    "@pmoo/testy": "^5.0.1"
+    "@pmoo/testy": "^6.1.0"
   }
 }
